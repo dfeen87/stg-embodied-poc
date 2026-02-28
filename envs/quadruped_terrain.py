@@ -186,11 +186,11 @@ class QuadrupedTerrainEnv:
         except Exception:
             torso_pos = [0.0, 0.0, 0.0]
 
-        # torso_upright: w-component of torso quaternion ∈ [0, 1]
+        # torso_upright: dot-product of torso z-axis with world z-axis ∈ [-1, 1].
+        # Uses the standard dm_control helper physics.torso_upright() which
+        # returns xmat['torso', 'zz'] — 1.0 = perfectly upright, -1.0 = inverted.
         try:
-            quat = physics.named.data.xquat["torso"]
-            # w is the first element in MuJoCo quaternion (w, x, y, z)
-            torso_upright = float(abs(quat[0]))
+            torso_upright = float(physics.torso_upright())
         except Exception:
             torso_upright = 1.0
 
