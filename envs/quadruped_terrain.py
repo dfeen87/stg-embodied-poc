@@ -29,7 +29,7 @@ _TERRAIN_INCLINE_MAX: float = 5.0  # 2.0 ≤ x < 5.0 → class 1 (incline)
 #                                    x ≥ 5.0 → class 2 (gap/complex)
 
 # Foot geom names in dm_control quadruped model
-_FOOT_GEOM_NAMES: List[str] = ["lf_foot", "rf_foot", "lh_foot", "rh_foot"]
+_FOOT_GEOM_NAMES: List[str] = ["foot_front_left", "foot_front_right", "foot_back_left", "foot_back_right"]
 
 
 def _classify_terrain(x: float) -> int:
@@ -294,10 +294,12 @@ class QuadrupedTerrainEnv:
                 flags.append(True)
             else:
                 # Fallback: check for partial name match ("foot" or "toe")
+                # and matching leg identifier (e.g., "front_left")
+                leg_id = foot.replace("foot_", "")
                 matched = any(
                     ("foot" in g or "toe" in g)
                     for g in active_geoms
-                    if foot.split("_")[0] in g  # e.g. "lf" in geom name
+                    if leg_id in g
                 )
                 flags.append(matched)
         return flags
