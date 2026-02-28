@@ -1,0 +1,231 @@
+cff-version: 1.2.0
+message: "If you use this software or reference this paper, please cite it as below."
+
+title: "Deterministic Spiral-Time Governance for Hallucination Suppression in LLM-Controlled Climbing and Walking Robots"
+
+type: article
+
+authors:
+  - family-names: "Krüger"
+    given-names: "Marcel"
+    orcid: "https://orcid.org/0009-0002-5709-9729"
+    email: "marcelkrueger092@gmail.com"
+    affiliation: "Independent Researcher, Germany"
+    alias: "Corresponding Author"
+
+  - family-names: "Feeney"
+    given-names: "Don Michael"
+    name-suffix: "Jr."
+    orcid: "https://orcid.org/0009-0003-1350-4160"
+    affiliation: "Independent Researcher, USA"
+
+year: 2026
+journal: "Journal of Climbing and Walking Robots"
+volume: "XX"
+issue: "XX"
+pages: "1-XX"
+doi: "assigned by journal upon acceptance"
+
+keywords:
+  - climbing robots
+  - walking robots
+  - legged locomotion
+  - LLM agents
+  - hallucination suppression
+  - deterministic supervision
+  - safety gating
+  - non-Markovian memory
+  - Spiral-Time Governor
+  - quadruped robotics
+
+abstract: >
+  Large Language Models (LLMs) are increasingly integrated into robotic autonomy
+  stacks for semantic planning and high-level decision support. In climbing and
+  walking robots, long-horizon deployment is constrained by hallucination drift,
+  retrieval instability, and non-deterministic reasoning variance, which can
+  propagate into physically unsafe locomotion behavior. We introduce a deterministic
+  external governance layer based on a Spiral-Time operator formalism. A scalar
+  instability functional ΔΦ(t) deterministically regulates memory writes, retrieval
+  widening, verification mode, and safe fallback switching. The framework is
+  model-agnostic and does not modify LLM weights, offering auditability and
+  predictable behavior suitable for safety-sensitive legged robot deployments.
+
+license: "TBD — assigned by journal"
+
+repository-code: "https://github.com/dfeen87/stg-embodied-poc"
+
+references:
+  - type: article
+    title: "PaLM-E: An Embodied Multimodal Language Model"
+    authors:
+      - family-names: "Driess"
+        given-names: "Danny"
+      - family-names: "Xia"
+        given-names: "Fei"
+    year: 2023
+    notes: "arXiv:2303.03378"
+
+  - type: article
+    title: "RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control"
+    authors:
+      - family-names: "Brohan"
+        given-names: "Anthony"
+      - family-names: "Brown"
+        given-names: "Noah"
+    year: 2023
+    notes: "arXiv:2307.15818"
+
+  - type: article
+    title: "Do As I Can, Not As I Say: Grounding Language in Robotic Affordances"
+    authors:
+      - family-names: "Ahn"
+        given-names: "Michael"
+      - family-names: "Brohan"
+        given-names: "Anthony"
+    year: 2022
+    notes: "arXiv:2204.01691"
+
+  - type: article
+    title: "Control Barrier Function Based Quadratic Programs for Safety Critical Systems"
+    authors:
+      - family-names: "Ames"
+        given-names: "Aaron D."
+      - family-names: "Xu"
+        given-names: "Xiangru"
+      - family-names: "Grizzle"
+        given-names: "Jessy W."
+      - family-names: "Tabuada"
+        given-names: "Paulo"
+    year: 2017
+    journal: "IEEE Transactions on Automatic Control"
+    volume: "62"
+    issue: "8"
+    pages: "3861-3876"
+    doi: "10.1109/TAC.2016.2638961"
+
+  - type: article
+    title: "Survey of Hallucination in Natural Language Generation"
+    authors:
+      - family-names: "Ji"
+        given-names: "Ziwei"
+      - family-names: "Lee"
+        given-names: "Nayeon"
+    year: 2023
+    journal: "ACM Computing Surveys"
+    volume: "55"
+    issue: "12"
+    pages: "1-38"
+    doi: "10.1145/3571730"
+
+  - type: article
+    title: "Inner Monologue: Embodied Reasoning through Planning with Language Models"
+    authors:
+      - family-names: "Huang"
+        given-names: "Wenlong"
+      - family-names: "Xia"
+        given-names: "Fei"
+    year: 2022
+    notes: "arXiv:2207.05608"
+
+  - type: conference-paper
+    title: "Code as Policies: Language Model Programs for Embodied Control"
+    authors:
+      - family-names: "Liang"
+        given-names: "Jacky"
+      - family-names: "Huang"
+        given-names: "Wenlong"
+    year: 2023
+    conference:
+      name: "IEEE International Conference on Robotics and Automation (ICRA)"
+    doi: "10.1109/ICRA48891.2023.10160591"
+
+  - type: article
+    title: "Robots that Ask for Help: Uncertainty-Aligned LLM Planning"
+    authors:
+      - family-names: "Ren"
+        given-names: "Allen Z."
+      - family-names: "Govil"
+        given-names: "Bharat"
+    year: 2023
+    notes: "arXiv:2307.01928"
+
+  - type: article
+    title: "A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions"
+    authors:
+      - family-names: "Huang"
+        given-names: "Lei"
+      - family-names: "Yu"
+        given-names: "Weijiang"
+    year: 2023
+    notes: "arXiv:2311.05232"
+
+  - type: conference-paper
+    title: "Reflexion: Language Agents with Iterative Design Learning"
+    authors:
+      - family-names: "Shinn"
+        given-names: "Noah"
+      - family-names: "Cassano"
+        given-names: "Federico"
+    year: 2023
+    conference:
+      name: "Advances in Neural Information Processing Systems (NeurIPS)"
+
+  - type: conference-paper
+    title: "Control Barrier Functions: Theory and Applications"
+    authors:
+      - family-names: "Ames"
+        given-names: "Aaron D."
+      - family-names: "Coogan"
+        given-names: "Samuel"
+    year: 2019
+    conference:
+      name: "IEEE 18th European Control Conference (ECC)"
+    doi: "10.23919/ECC.2019.8796030"
+
+  - type: article
+    title: "Safe Control with Learned Models: Optimality and Runtime Guarantees"
+    authors:
+      - family-names: "Cheng"
+        given-names: "Richard"
+      - family-names: "Orosz"
+        given-names: "Gábor"
+    year: 2023
+    journal: "IEEE Transactions on Automatic Control"
+
+  - type: article
+    title: "Safe Multi-Agent Reinforcement Learning for Climbing Robots in Uncertain Environments"
+    authors:
+      - family-names: "Gu"
+        given-names: "Shangding"
+    year: 2024
+    journal: "Journal of Intelligent & Robotic Systems"
+
+  - type: book
+    title: "Nonlinear Systems"
+    authors:
+      - family-names: "Khalil"
+        given-names: "Hassan K."
+    year: 2002
+    edition: "3rd"
+    publisher: "Prentice Hall"
+    isbn: "978-0130673893"
+
+  - type: book
+    title: "Applied Nonlinear Control"
+    authors:
+      - family-names: "Slotine"
+        given-names: "Jean-Jacques E."
+      - family-names: "Li"
+        given-names: "Weiping"
+    year: 1991
+    publisher: "Prentice Hall"
+    isbn: "978-0130408907"
+
+  - type: conference-paper
+    title: "Input-to-State Stability: Basic Concepts and Results"
+    authors:
+      - family-names: "Sontag"
+        given-names: "Eduardo D."
+    year: 1989
+    conference:
+      name: "Nonlinear Dynamics and Operational Control"
