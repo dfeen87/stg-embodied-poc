@@ -1,7 +1,7 @@
 """IMAGES/generate_plots.py
 
 Generate illustration plots from VALIDATION_ANALYSIS.md simulation data.
-Run from repository root: python IMAGES/generate_plots.py
+Run from repository root: python images/generate_plots.py
 """
 
 from __future__ import annotations
@@ -9,14 +9,16 @@ from __future__ import annotations
 import os
 import matplotlib
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import numpy as np
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
 
 OUTPUT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CONDITIONS = ["baseline", "llm_rag", "governor", "ablation_a", "ablation_b"]
-COND_LABELS = ["Baseline LLM", "LLM + RAG", "LLM + Governor", "Ablation A\n(δ=0)", "Ablation B\n(always-exec)"]
+COND_LABELS = [
+    "Baseline LLM", "LLM + RAG", "LLM + Governor",
+    "Ablation A\n(δ=0)", "Ablation B\n(always-exec)",
+]
 COLORS = ["#4C72B0", "#DD8452", "#55A868", "#C44E52", "#8172B2"]
 
 # ── Data from VALIDATION_ANALYSIS.md ──────────────────────────────────────────
@@ -90,8 +92,8 @@ MEAN_DELTA_PHI = {
 MODE_CONDITIONS = ["baseline", "governor", "ablation_a", "rag"]
 MODE_COLORS = ["#4C72B0", "#DD8452", "#55A868", "#C44E52"]
 MODE_EXECUTE = {"baseline": 100.0, "governor": 43.0, "ablation_a": 49.5, "rag": 100.0}
-MODE_VERIFY  = {"baseline": 0.0,   "governor": 51.8, "ablation_a": 48.3, "rag": 0.0}
-MODE_SAFE    = {"baseline": 0.0,   "governor": 5.2,  "ablation_a": 2.2,  "rag": 0.0}
+MODE_VERIFY = {"baseline": 0.0, "governor": 51.8, "ablation_a": 48.3, "rag": 0.0}
+MODE_SAFE = {"baseline": 0.0, "governor": 5.2, "ablation_a": 2.2, "rag": 0.0}
 
 # Per-episode violations (5 seeds each) — original 4-condition data
 PER_SEED_CONDITIONS = ["baseline", "governor", "ablation_a", "rag"]
@@ -110,11 +112,11 @@ OVERHEAD_COMPONENTS = [
     "Governor\nupdate (ΔΦ)",
     "Logging /\naudit trail",
 ]
-OVERHEAD_LATENCY     = [1.2, 0.9, 2.4, 0.3, 0.6]
+OVERHEAD_LATENCY = [1.2, 0.9, 2.4, 0.3, 0.6]
 OVERHEAD_LATENCY_ERR = [0.2, 0.1, 0.4, 0.1, 0.1]
-OVERHEAD_CPU         = [2.1, 1.8, 3.5, 0.4, 0.9]
-OVERHEAD_MEM         = [4.2, 3.1, 8.6, 1.1, 2.3]
-OVERHEAD_ENERGY      = [0.8, 0.6, 1.4, 0.2, 0.3]
+OVERHEAD_CPU = [2.1, 1.8, 3.5, 0.4, 0.9]
+OVERHEAD_MEM = [4.2, 3.1, 8.6, 1.1, 2.3]
+OVERHEAD_ENERGY = [0.8, 0.6, 1.4, 0.2, 0.3]
 
 # ── Helper ─────────────────────────────────────────────────────────────────────
 
@@ -162,10 +164,10 @@ def plot_mode_distribution() -> None:
     verify = [MODE_VERIFY[c] for c in MODE_CONDITIONS]
     safe = [MODE_SAFE[c] for c in MODE_CONDITIONS]
 
-    p1 = ax.bar(x, execute, w, label="EXECUTE", color="#4C72B0")
-    p2 = ax.bar(x, verify, w, bottom=execute, label="VERIFY", color="#55A868")
+    ax.bar(x, execute, w, label="EXECUTE", color="#4C72B0")
+    ax.bar(x, verify, w, bottom=execute, label="VERIFY", color="#55A868")
     execute_verify_sum = [e + v for e, v in zip(execute, verify)]
-    p3 = ax.bar(x, safe, w, bottom=execute_verify_sum, label="SAFE", color="#C44E52")
+    ax.bar(x, safe, w, bottom=execute_verify_sum, label="SAFE", color="#C44E52")
 
     ax.set_xticks(x)
     ax.set_xticklabels(MODE_CONDITIONS)
@@ -218,7 +220,10 @@ def plot_signal_statistics() -> None:
     ax.set_xticks(x)
     ax.set_xticklabels(COND_LABELS, fontsize=8)
     ax.set_ylabel("Signal value")
-    ax.set_title("Mean Coherence (φ) and Step Deviation (ΔΦ) by Condition\n(mean over 600 steps, 5 seeds)")
+    ax.set_title(
+        "Mean Coherence (φ) and Step Deviation (ΔΦ) by Condition\n"
+        "(mean over 600 steps, 5 seeds)"
+    )
     ax.set_ylim(0, 0.85)
     ax.legend(fontsize=8)
     ax.spines[["top", "right"]].set_visible(False)
@@ -302,9 +307,9 @@ def plot_performance_overhead() -> None:
     ax2 = axes[1]
     width = 0.22
     x2 = np.arange(len(OVERHEAD_COMPONENTS))
-    b1 = ax2.bar(x2 - width, OVERHEAD_CPU,    width, label="CPU (%)",     color="#4C72B0")
-    b2 = ax2.bar(x2,          OVERHEAD_MEM,    width, label="Mem (MB)",    color="#DD8452")
-    b3 = ax2.bar(x2 + width,  OVERHEAD_ENERGY, width, label="Energy (mJ)", color="#55A868")
+    ax2.bar(x2 - width, OVERHEAD_CPU, width, label="CPU (%)", color="#4C72B0")
+    ax2.bar(x2, OVERHEAD_MEM, width, label="Mem (MB)", color="#DD8452")
+    ax2.bar(x2 + width, OVERHEAD_ENERGY, width, label="Energy (mJ)", color="#55A868")
     ax2.set_xticks(x2)
     ax2.set_xticklabels(OVERHEAD_COMPONENTS, fontsize=8)
     ax2.set_ylabel("Resource usage")

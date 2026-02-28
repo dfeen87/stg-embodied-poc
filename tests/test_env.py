@@ -81,7 +81,6 @@ def mock_suite():
 
     with patch.dict(sys.modules, {"dm_control": dm_control_mod, "dm_control.suite": suite_mock}):
         # Also patch the _DM_CONTROL_AVAILABLE flag in the module
-        import importlib
         import envs.quadruped_terrain as qt_mod
         original = qt_mod._DM_CONTROL_AVAILABLE
         qt_mod._DM_CONTROL_AVAILABLE = True
