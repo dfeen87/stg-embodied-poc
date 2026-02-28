@@ -103,3 +103,11 @@ stg-mujoco-poc/
 ## Note
 
 This is a **minimal proof-of-concept** created specifically for reviewer response to demonstrate that the Spiral-Time Governor works under real MuJoCo physics. Implementation details follow the mathematical specification in the paper exactly.
+
+---
+
+## Acknowledgements
+
+Repository structure, implementation scaffolding, and documentation were developed
+with assistance from Claude (Sonnet 4.6) by Anthropic. All scientific content,
+mathematical formulations, and experimental design originate from the authors.
