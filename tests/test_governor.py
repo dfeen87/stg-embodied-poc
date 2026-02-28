@@ -261,7 +261,6 @@ class TestAblations:
 
         g_full = SpiralTimeGovernor(ablation="none")
         g_full.step(claims, _ACTION, oracle, _always_ok)
-        phi_full = g_full.log[0]["delta_phi"]
         # Inject some chi by running a second step with different oracle
         oracle2 = dict(_DUMMY_ORACLE, feasible=False, n_contacts=1, torso_upright=0.3)
         g_full.step(claims, _ACTION, oracle2, _always_ok)

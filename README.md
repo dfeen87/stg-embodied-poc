@@ -45,11 +45,16 @@ Results are written to `results/` as CSV and JSON files (see [Output Files](#out
 ## Directory Structure
 
 ```
-stg-mujoco-poc/
+stg-embodied-poc/
 ├── README.md
+├── VALIDATION_ANALYSIS.md      # Detailed validation results and statistical analysis
+├── CITATION.cff                # Citation metadata for the companion paper
 ├── requirements.txt
 ├── config.py                   # Single source of truth for all parameters
 ├── .gitignore
+├── .github/
+│   └── workflows/
+│       └── ci.yml              # CI pipeline (lint + tests, Python 3.10 & 3.11)
 ├── envs/
 │   ├── __init__.py
 │   └── quadruped_terrain.py    # dm_control quadruped wrapper + oracle
@@ -62,6 +67,15 @@ stg-mujoco-poc/
 ├── analysis/
 │   ├── __init__.py
 │   └── compute_metrics.py      # Metric computation from episode logs
+├── images/
+│   ├── generate_plots.py       # Script to regenerate all figures
+│   ├── fig1_violations_by_condition.png
+│   ├── fig2_mode_distribution.png
+│   ├── fig3_hallucination_rate.png
+│   ├── fig4_signal_statistics.png
+│   ├── fig5_per_seed_violations_heatmap.png
+│   ├── fig6_success_rate.png
+│   └── fig7_performance_overhead.png
 ├── run_experiment.py           # Main experiment runner (CLI)
 ├── scripts/
 │   ├── run_all.sh              # Full pipeline (all conditions, seeds 0–9)
@@ -150,11 +164,11 @@ After running `run_experiment.py`, the `results/` directory contains:
 If you use this code, please cite the companion paper (placeholder — update when published):
 
 ```bibtex
-@article{stg2025,
-  title   = {Spiral-Time Governor: Deterministic Supervision of LLM-Driven Embodied Agents},
-  author  = {[Authors]},
-  journal = {[Venue]},
-  year    = {2025},
+@article{stg2026,
+  title   = {Deterministic Spiral-Time Governance for Hallucination Suppression in LLM-Controlled Climbing and Walking Robots},
+  author  = {Krüger, Marcel and Feeney, Don Michael Jr.},
+  journal = {Journal of Climbing and Walking Robots},
+  year    = {2026},
 }
 ```
 

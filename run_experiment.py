@@ -19,10 +19,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import sys
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -255,7 +253,8 @@ def main(argv: Optional[List[str]] = None) -> None:
     summary_path = output_dir / "summary.csv"
     summary_df.to_csv(summary_path, index=False)
     print(f"\nSummary saved to {summary_path}")
-    print(summary_df.groupby("condition")[["H_T", "violations", "success", "mean_phi"]].mean().to_string())
+    cols = ["H_T", "violations", "success", "mean_phi"]
+    print(summary_df.groupby("condition")[cols].mean().to_string())
 
     # Save full results as JSON (step logs excluded to keep file manageable)
     json_results = []

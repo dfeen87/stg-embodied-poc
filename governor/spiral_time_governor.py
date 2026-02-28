@@ -15,8 +15,8 @@ Mathematical specification (from paper):
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Literal, Optional, Tuple
+from dataclasses import dataclass
+from typing import Callable, Dict, List, Literal, Tuple
 
 import numpy as np
 
