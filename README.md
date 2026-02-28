@@ -177,6 +177,6 @@ If you use this code, please cite the companion paper (placeholder — update wh
 ## Acknowledgements
 
 Repository structure, implementation scaffolding, and documentation were developed
-with assistance from Claude (Sonnet 4.6) by Anthropic. All scientific content,
+with assistance from Claude (Sonnet 4.6) by Anthropic. A final code review was performed by Google (Jules Pro). All scientific content,
 mathematical formulations, and experimental design originate from the authors.
 
