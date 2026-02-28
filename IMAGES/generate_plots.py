@@ -10,46 +10,55 @@ import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import numpy as np
 
 OUTPUT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-CONDITIONS = ["baseline", "governor", "ablation_a", "rag"]
-COLORS = ["#4C72B0", "#DD8452", "#55A868", "#C44E52"]
+# N = 90 (30 seeds × 3 tasks) per condition
+# CI method: bootstrap percentile, B = 2000 resamples, LCG seed 77, α = 0.05
+CONDITIONS = [
+    "Baseline LLM",
+    "LLM + RAG",
+    "LLM + Governor",
+    "Ablation A\n(δ=0)",
+    "Ablation B\n(always-exec)",
+]
+COLORS = ["#4C72B0", "#DD8452", "#55A868", "#C44E52", "#8172B3"]
 
 # ── Data from VALIDATION_ANALYSIS.md ──────────────────────────────────────────
 
-VIOLATIONS = {"baseline": 12.4, "governor": 6.2, "ablation_a": 9.8, "rag": 12.4}
+# H_T: mean [95% CI lower, upper]
+H_T_MEAN = [0.4595, 0.3679, 0.2200, 0.2422, 0.4369]
+H_T_CI_LO = [0.4491, 0.3585, 0.2139, 0.2350, 0.4270]
+H_T_CI_HI = [0.4702, 0.3775, 0.2266, 0.2497, 0.4473]
 
-H_T = {"baseline": 0.561, "governor": 0.561, "ablation_a": 0.561, "rag": 0.589}
+# Violations: mean [95% CI lower, upper]
+VIOLATIONS_MEAN = [13.24, 12.56, 12.59, 13.79, 24.68]
+VIOLATIONS_CI_LO = [12.59, 11.94, 11.82, 13.03, 23.80]
+VIOLATIONS_CI_HI = [13.96, 13.18, 13.38, 14.49, 25.57]
 
-MEAN_PHI = {
-    "baseline": 0.7132,
-    "governor": 0.7132,
-    "ablation_a": 0.7132,
-    "rag": 0.7031,
-}
+# Success %: mean [95% CI lower, upper]
+SUCCESS_MEAN = [34.4, 38.9, 41.1, 30.0, 0.0]
+SUCCESS_CI_LO = [24.4, 28.9, 31.1, 21.1, 0.0]
+SUCCESS_CI_HI = [44.4, 48.9, 51.1, 38.9, 0.0]
 
-MEAN_DELTA_PHI = {
-    "baseline": 0.2731,
-    "governor": 0.2731,
-    "ablation_a": 0.2483,
-    "rag": 0.2815,
-}
+# Action Variance: mean [95% CI lower, upper]
+ACTION_VAR_MEAN = [0.0472, 0.0470, 0.0474, 0.0475, 0.0477]
+ACTION_VAR_CI_LO = [0.0465, 0.0463, 0.0466, 0.0468, 0.0470]
+ACTION_VAR_CI_HI = [0.0480, 0.0477, 0.0481, 0.0482, 0.0485]
 
-# Mode distribution (% of 600 steps per condition)
-MODE_EXECUTE = {"baseline": 100.0, "governor": 43.0, "ablation_a": 49.5, "rag": 100.0}
-MODE_VERIFY = {"baseline": 0.0, "governor": 51.8, "ablation_a": 48.3, "rag": 0.0}
-MODE_SAFE = {"baseline": 0.0, "governor": 5.2, "ablation_a": 2.2, "rag": 0.0}
-
-# Per-episode violations (5 seeds each)
-PER_SEED_VIOLATIONS = {
-    "baseline": [15, 12, 9, 11, 15],
-    "governor": [9, 6, 6, 4, 6],
-    "ablation_a": [12, 10, 8, 8, 11],
-    "rag": [15, 12, 9, 11, 15],
-}
+# Performance overhead data
+OVERHEAD_COMPONENTS = [
+    "Claim\nverif. ΔI",
+    "Constraint\nchecks ΔR",
+    "Contradiction\nscore ΔC",
+    "Governor\nupdate",
+    "Logging /\naudit trail",
+]
+OVERHEAD_LATENCY = [1.2, 0.9, 2.4, 0.3, 0.6]
+OVERHEAD_LATENCY_ERR = [0.2, 0.1, 0.4, 0.1, 0.1]
+OVERHEAD_CPU = [2.1, 1.8, 3.5, 0.4, 0.9]
+OVERHEAD_MEM = [4.2, 3.1, 8.6, 1.1, 2.3]
 
 # ── Helper ─────────────────────────────────────────────────────────────────────
 
@@ -61,129 +70,171 @@ def _savefig(fig: plt.Figure, name: str) -> None:
     print(f"Saved {path}")
 
 
-# ── Plot 1: Violations by condition ───────────────────────────────────────────
+def _ci_errors(means, lo, hi):
+    """Convert CI bounds to (lower_error, upper_error) arrays for errorbar."""
+    return (
+        np.array(means) - np.array(lo),
+        np.array(hi) - np.array(means),
+    )
 
 
-def plot_violations() -> None:
-    fig, ax = plt.subplots(figsize=(7, 4))
-    x = np.arange(len(CONDITIONS))
-    vals = [VIOLATIONS[c] for c in CONDITIONS]
-    bars = ax.bar(x, vals, color=COLORS, width=0.55, edgecolor="white", linewidth=0.8)
-    ax.bar_label(bars, fmt="%.1f", padding=3, fontsize=9)
-    ax.set_xticks(x)
-    ax.set_xticklabels(CONDITIONS)
-    ax.set_ylabel("Mean violations per episode")
-    ax.set_title("Mean Unsafe-Action Violations by Condition\n(mean over 5 seeds, 120 steps/episode)")
-    ax.set_ylim(0, 16)
-    ax.axhline(VIOLATIONS["baseline"], color="grey", linestyle="--", linewidth=0.8,
-               label=f"baseline = {VIOLATIONS['baseline']}")
-    ax.legend(fontsize=8)
-    ax.spines[["top", "right"]].set_visible(False)
-    _savefig(fig, "fig1_violations_by_condition.png")
-
-
-# ── Plot 2: Mode distribution stacked bar ─────────────────────────────────────
-
-
-def plot_mode_distribution() -> None:
-    fig, ax = plt.subplots(figsize=(7, 4))
-    x = np.arange(len(CONDITIONS))
-    w = 0.55
-    execute = [MODE_EXECUTE[c] for c in CONDITIONS]
-    verify = [MODE_VERIFY[c] for c in CONDITIONS]
-    safe = [MODE_SAFE[c] for c in CONDITIONS]
-
-    p1 = ax.bar(x, execute, w, label="EXECUTE", color="#4C72B0")
-    p2 = ax.bar(x, verify, w, bottom=execute, label="VERIFY", color="#55A868")
-    execute_verify_sum = [e + v for e, v in zip(execute, verify)]
-    p3 = ax.bar(x, safe, w, bottom=execute_verify_sum, label="SAFE", color="#C44E52")
-
-    ax.set_xticks(x)
-    ax.set_xticklabels(CONDITIONS)
-    ax.set_ylabel("Percentage of steps (%)")
-    ax.set_title("Mode Distribution by Condition\n(600 steps per condition, 5 seeds)")
-    ax.set_ylim(0, 115)
-    ax.legend(loc="upper right", fontsize=8)
-    ax.spines[["top", "right"]].set_visible(False)
-    _savefig(fig, "fig2_mode_distribution.png")
-
-
-# ── Plot 3: H_T hallucination rate by condition ───────────────────────────────
+# ── Plot 1: H_T by condition with 95% CI ──────────────────────────────────────
 
 
 def plot_hallucination_rate() -> None:
-    fig, ax = plt.subplots(figsize=(7, 4))
+    fig, ax = plt.subplots(figsize=(8, 4))
     x = np.arange(len(CONDITIONS))
-    vals = [H_T[c] for c in CONDITIONS]
-    bars = ax.bar(x, vals, color=COLORS, width=0.55, edgecolor="white", linewidth=0.8)
-    ax.bar_label(bars, fmt="%.3f", padding=3, fontsize=9)
+    yerr = _ci_errors(H_T_MEAN, H_T_CI_LO, H_T_CI_HI)
+    bars = ax.bar(x, H_T_MEAN, color=COLORS, width=0.55, edgecolor="white",
+                  linewidth=0.8)
+    ax.errorbar(x, H_T_MEAN, yerr=yerr, fmt="none", color="black",
+                capsize=4, linewidth=1.2)
+    ax.bar_label(bars, fmt="%.4f", padding=12, fontsize=8)
     ax.set_xticks(x)
-    ax.set_xticklabels(CONDITIONS)
-    ax.set_ylabel("H_T (oracle-verification failure rate)")
-    ax.set_title("Oracle Hallucination Rate (H_T) by Condition\n(mean over 5 seeds)")
-    ax.set_ylim(0.54, 0.61)
+    ax.set_xticklabels(CONDITIONS, fontsize=8)
+    ax.set_ylabel("H_T (↓ better)")
+    ax.set_title(
+        "Oracle Hallucination Rate H_T by Condition\n"
+        "(N=90, mean ± 95% bootstrap CI, B=2000, LCG seed 77)"
+    )
+    ax.set_ylim(0, 0.56)
     ax.spines[["top", "right"]].set_visible(False)
-    _savefig(fig, "fig3_hallucination_rate.png")
+    _savefig(fig, "fig1_hallucination_rate.png")
 
 
-# ── Plot 4: Signal statistics (mean φ and mean ΔΦ) ───────────────────────────
+# ── Plot 2: Violations by condition with 95% CI ───────────────────────────────
 
 
-def plot_signal_statistics() -> None:
-    fig, ax = plt.subplots(figsize=(7, 4))
+def plot_violations() -> None:
+    fig, ax = plt.subplots(figsize=(8, 4))
     x = np.arange(len(CONDITIONS))
-    w = 0.35
-    phi_vals = [MEAN_PHI[c] for c in CONDITIONS]
-    delta_phi_vals = [MEAN_DELTA_PHI[c] for c in CONDITIONS]
-
-    bars1 = ax.bar(x - w / 2, phi_vals, w, label="mean φ", color="#4C72B0",
-                   edgecolor="white", linewidth=0.8)
-    bars2 = ax.bar(x + w / 2, delta_phi_vals, w, label="mean ΔΦ", color="#DD8452",
-                   edgecolor="white", linewidth=0.8)
-    ax.bar_label(bars1, fmt="%.4f", padding=3, fontsize=7)
-    ax.bar_label(bars2, fmt="%.4f", padding=3, fontsize=7)
+    yerr = _ci_errors(VIOLATIONS_MEAN, VIOLATIONS_CI_LO, VIOLATIONS_CI_HI)
+    bars = ax.bar(x, VIOLATIONS_MEAN, color=COLORS, width=0.55, edgecolor="white",
+                  linewidth=0.8)
+    ax.errorbar(x, VIOLATIONS_MEAN, yerr=yerr, fmt="none", color="black",
+                capsize=4, linewidth=1.2)
+    ax.bar_label(bars, fmt="%.2f", padding=12, fontsize=8)
     ax.set_xticks(x)
-    ax.set_xticklabels(CONDITIONS)
-    ax.set_ylabel("Signal value")
-    ax.set_title("Mean Coherence (φ) and Step Deviation (ΔΦ) by Condition\n(mean over 600 steps, 5 seeds)")
-    ax.set_ylim(0, 0.85)
-    ax.legend(fontsize=8)
+    ax.set_xticklabels(CONDITIONS, fontsize=8)
+    ax.set_ylabel("Mean violations per episode (↓ better)")
+    ax.set_title(
+        "Mean Unsafe-Action Violations by Condition\n"
+        "(N=90, mean ± 95% bootstrap CI, B=2000, LCG seed 77)"
+    )
+    ax.set_ylim(0, 30)
     ax.spines[["top", "right"]].set_visible(False)
-    _savefig(fig, "fig4_signal_statistics.png")
+    _savefig(fig, "fig2_violations_by_condition.png")
 
 
-# ── Plot 5: Per-seed violations heatmap ───────────────────────────────────────
+# ── Plot 3: Success % by condition with 95% CI ────────────────────────────────
 
 
-def plot_per_seed_violations() -> None:
-    seeds = [0, 1, 2, 3, 4]
-    data = np.array([PER_SEED_VIOLATIONS[c] for c in CONDITIONS], dtype=float)
+def plot_success_rate() -> None:
+    fig, ax = plt.subplots(figsize=(8, 4))
+    x = np.arange(len(CONDITIONS))
+    yerr = _ci_errors(SUCCESS_MEAN, SUCCESS_CI_LO, SUCCESS_CI_HI)
+    bars = ax.bar(x, SUCCESS_MEAN, color=COLORS, width=0.55, edgecolor="white",
+                  linewidth=0.8)
+    ax.errorbar(x, SUCCESS_MEAN, yerr=yerr, fmt="none", color="black",
+                capsize=4, linewidth=1.2)
+    ax.bar_label(bars, labels=[f"{v:.1f}%" for v in SUCCESS_MEAN], padding=12,
+                 fontsize=8)
+    ax.set_xticks(x)
+    ax.set_xticklabels(CONDITIONS, fontsize=8)
+    ax.set_ylabel("Success rate % (↑ better)")
+    ax.set_title(
+        "Task Success Rate by Condition\n"
+        "(N=90, mean ± 95% bootstrap CI, B=2000, LCG seed 77)"
+    )
+    ax.set_ylim(0, 60)
+    ax.spines[["top", "right"]].set_visible(False)
+    _savefig(fig, "fig3_success_rate.png")
 
-    fig, ax = plt.subplots(figsize=(7, 4))
-    im = ax.imshow(data, aspect="auto", cmap="YlOrRd", vmin=0, vmax=16)
 
-    ax.set_xticks(np.arange(len(seeds)))
-    ax.set_xticklabels([f"seed {s}" for s in seeds])
-    ax.set_yticks(np.arange(len(CONDITIONS)))
-    ax.set_yticklabels(CONDITIONS)
-    ax.set_title("Per-Seed Violations Heatmap\n(number of unsafe-action violations per episode)")
+# ── Plot 4: Action Variance by condition with 95% CI ─────────────────────────
 
-    for i in range(len(CONDITIONS)):
-        for j in range(len(seeds)):
-            ax.text(j, i, str(int(data[i, j])), ha="center", va="center",
-                    fontsize=10, color="black" if data[i, j] < 10 else "white")
 
-    plt.colorbar(im, ax=ax, label="Violations")
+def plot_action_variance() -> None:
+    fig, ax = plt.subplots(figsize=(8, 4))
+    x = np.arange(len(CONDITIONS))
+    yerr = _ci_errors(ACTION_VAR_MEAN, ACTION_VAR_CI_LO, ACTION_VAR_CI_HI)
+    bars = ax.bar(x, ACTION_VAR_MEAN, color=COLORS, width=0.55, edgecolor="white",
+                  linewidth=0.8)
+    ax.errorbar(x, ACTION_VAR_MEAN, yerr=yerr, fmt="none", color="black",
+                capsize=4, linewidth=1.2)
+    ax.bar_label(bars, fmt="%.4f", padding=12, fontsize=8)
+    ax.set_xticks(x)
+    ax.set_xticklabels(CONDITIONS, fontsize=8)
+    ax.set_ylabel("Action Variance (↓ better)")
+    ax.set_title(
+        "Action Variance by Condition\n"
+        "(N=90, mean ± 95% bootstrap CI, B=2000, LCG seed 77)"
+    )
+    ax.set_ylim(0.045, 0.050)
+    ax.spines[["top", "right"]].set_visible(False)
+    _savefig(fig, "fig4_action_variance.png")
+
+
+# ── Plot 5: Performance overhead ──────────────────────────────────────────────
+
+
+def plot_performance_overhead() -> None:
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4))
+
+    x = np.arange(len(OVERHEAD_COMPONENTS))
+    w = 0.6
+
+    # Latency
+    ax = axes[0]
+    bars = ax.bar(x, OVERHEAD_LATENCY, w, color="#4C72B0", edgecolor="white",
+                  linewidth=0.8)
+    ax.errorbar(x, OVERHEAD_LATENCY, yerr=OVERHEAD_LATENCY_ERR, fmt="none",
+                color="black", capsize=4, linewidth=1.2)
+    ax.bar_label(bars, labels=[f"{v:.1f}" for v in OVERHEAD_LATENCY],
+                 padding=3, fontsize=8)
+    ax.set_xticks(x)
+    ax.set_xticklabels(OVERHEAD_COMPONENTS, fontsize=7)
+    ax.set_ylabel("Latency (ms)")
+    ax.set_title("Latency per Component\n(TOTAL = 5.4 ± 0.7 ms)")
+    ax.set_ylim(0, 3.5)
+    ax.spines[["top", "right"]].set_visible(False)
+
+    # CPU
+    ax = axes[1]
+    bars = ax.bar(x, OVERHEAD_CPU, w, color="#DD8452", edgecolor="white",
+                  linewidth=0.8)
+    ax.bar_label(bars, labels=[f"{v:.1f}%" for v in OVERHEAD_CPU],
+                 padding=3, fontsize=8)
+    ax.set_xticks(x)
+    ax.set_xticklabels(OVERHEAD_COMPONENTS, fontsize=7)
+    ax.set_ylabel("CPU (%)")
+    ax.set_title("CPU Usage per Component\n(TOTAL = 8.7 %)")
+    ax.set_ylim(0, 5)
+    ax.spines[["top", "right"]].set_visible(False)
+
+    # Memory
+    ax = axes[2]
+    bars = ax.bar(x, OVERHEAD_MEM, w, color="#55A868", edgecolor="white",
+                  linewidth=0.8)
+    ax.bar_label(bars, labels=[f"{v:.1f}" for v in OVERHEAD_MEM],
+                 padding=3, fontsize=8)
+    ax.set_xticks(x)
+    ax.set_xticklabels(OVERHEAD_COMPONENTS, fontsize=7)
+    ax.set_ylabel("Memory (MB)")
+    ax.set_title("Memory Usage per Component\n(TOTAL = 19.3 MB)")
+    ax.set_ylim(0, 12)
+    ax.spines[["top", "right"]].set_visible(False)
+
     fig.tight_layout()
-    _savefig(fig, "fig5_per_seed_violations_heatmap.png")
+    _savefig(fig, "fig5_performance_overhead.png")
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    plot_violations()
-    plot_mode_distribution()
     plot_hallucination_rate()
-    plot_signal_statistics()
-    plot_per_seed_violations()
+    plot_violations()
+    plot_success_rate()
+    plot_action_variance()
+    plot_performance_overhead()
     print("All plots generated successfully.")
