@@ -404,10 +404,10 @@ The dm_control `"escape"` task was used as a physics-grounded proxy for the ANYm
 
 **Table 5:** Embodied MuJoCo validation — mean and 95% bootstrap CI over seeds 0–9.
 
-| Condition | H_T | 95% CI | Violations ↓ | 95% CI | EXECUTE (%) | Success Rate |
-|---|---|---|---|---|---|---|
-| Baseline LLM | 0.65 | [0.47, 0.83] | 11.4 | [9.7, 13.1] | 100 | 0.0% [0.0%, 0.0%] |
-| **LLM+Governor** | **0.65** | **[0.47, 0.83]** | **4.7** | **[3.0, 6.5]** | **30** | **0.0% [0.0%, 0.0%]** |
+| Condition | H_T | 95% CI | Violations ↓ | 95% CI | EXECUTE (%) |
+|---|---|---|---|---|---|
+| Baseline LLM | 0.65 | [0.47, 0.83] | 11.4 | [9.7, 13.1] | 100 |
+| **LLM+Governor** | **0.65** | **[0.47, 0.83]** | **4.7** | **[3.0, 6.5]** | **30** |
 
 ```
   MuJoCo violations comparison (seeds 0–9):
