@@ -279,7 +279,7 @@ M.K. is the originator of the Spiral-Time governance concept and primary author 
 
 D.M.F. was responsible for implementation of the simulation testbed, experimental execution, data generation, and statistical evaluation. He contributed to validation of the framework under controlled perturbations and provided technical feedback during manuscript refinement.
 
-Repository scaffolding, code structure, documentation, and citation formatting were developed with assistance from **Claude (Sonnet 4.6)** by Anthropic ([https://www.anthropic.com](https://www.anthropic.com)). Final review of repository prior to version 1.0.0 release was performed by Google (Jules Pro) All scientific content, mathematical formulations, and experimental design originate from the authors.
+Repository scaffolding, code structure, documentation, and citation formatting were developed with assistance from **Claude (Sonnet 4.6)** by Anthropic ([https://www.anthropic.com](https://www.anthropic.com)). Final review of repository prior to version 1.0.0 release was performed by **Google (Jules Pro)** ([https://jules.google.com](https://jules.google.com)). All scientific content, mathematical formulations, and experimental design originate from the authors.
 
 ---
 
