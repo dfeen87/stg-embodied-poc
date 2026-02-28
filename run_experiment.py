@@ -32,29 +32,7 @@ from envs.quadruped_terrain import QuadrupedTerrainEnv
 from governor.spiral_time_governor import SpiralTimeGovernor
 from llm_mock.mock_llm_agent import MockLLMAgent
 from analysis.compute_metrics import summarise_runs
-
-# ---------------------------------------------------------------------------
-# Experiment configuration
-# ---------------------------------------------------------------------------
-
-CONDITION_CONFIGS: Dict[str, Dict[str, Any]] = {
-    "baseline": {
-        "ablation": "always_execute",
-        "hallucination_prob": 0.45,
-    },
-    "governor": {
-        "ablation": "none",
-        "hallucination_prob": 0.45,
-    },
-    "ablation_a": {
-        "ablation": "no_delta",
-        "hallucination_prob": 0.45,
-    },
-    "rag": {
-        "ablation": "always_execute",
-        "hallucination_prob": 0.30,
-    },
-}
+from config import MAX_STEPS, CONDITION_CONFIGS
 
 ALL_CONDITIONS = list(CONDITION_CONFIGS.keys())
 
@@ -127,7 +105,7 @@ def run_episode(
     violations: int = 0
     last_reward: float = 0.0
 
-    for t in range(120):
+    for t in range(MAX_STEPS):
         proposed_action, claims = agent.propose(obs, t, n_claims)
         oracle_state = env.oracle(t)
 
