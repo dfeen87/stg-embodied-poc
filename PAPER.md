@@ -516,26 +516,61 @@ The authors declare no conflict of interest.
 
 ## References
 
-[1] A. D. Ames, X. Xu, J. W. Grizzle, and P. Tabuada, "Control Barrier Function Based Quadratic Programs for Safety-Critical Systems," *IEEE Transactions on Automatic Control*, vol. 62, no. 8, pp. 3861–3876, Aug. 2017. doi: [10.1109/TAC.2016.2638961](https://doi.org/10.1109/TAC.2016.2638961)
+[1] S. Basu, M. H. Kim, S. Tatlidil, T. Williams, S. Sloman, and R. I. Bahar, “Aug-
+menting large language models with psychologically grounded models of causal rea-
+soning for planning under uncertainty,” Frontiers in Artificial Intelligence, vol. 8,
+Art. 1730614, Jan. 2026. doi: 10.3389/frai.2025.1730614.
 
-[2] W. Huang, F. Xia, T. Xiao, H. Chan, J. Liang, P. Florence, A. Zeng, J. Tompson, I. Mordatch, Y. Chebotar, P. Sermanet, N. Brown, T. Jackson, S. Levine, V. Vanhoucke, and K. Hausman, "Inner Monologue: Embodied Reasoning through Planning with Language Models," *arXiv preprint arXiv:2207.05608*, 2022. [https://arxiv.org/abs/2207.05608](https://arxiv.org/abs/2207.05608)
+[2] A. D. Ames, X. Xu, J. W. Grizzle, and P. Tabuada, “Control Barrier Function Based
+Quadratic Programs for Safety-Critical Systems,” IEEE Transactions on Automatic
+Control, vol. 62, no. 8, pp. 3861–3876, Aug. 2017. doi: 10.1109/TAC.2016.2638961.
 
-[3] A. Z. Ren, B. Govil, T.-Y. Yang, K. Narasimhan, and A. Majumdar, "Robots that Ask for Help: Uncertainty-Aligned LLM Planning," *arXiv preprint arXiv:2307.01928*, 2023. [https://arxiv.org/abs/2307.01928](https://arxiv.org/abs/2307.01928)
+[3] W. Huang et al., “Inner Monologue: Embodied Reasoning through Planning with
+Language Models,” arXiv preprint arXiv:2207.05608, 2022.
 
-[4] Z. Ji, N. Lee, R. Frieske, T. Yu, D. Su, Y. Xu, E. Ishii, Y. J. Bang, A. Madotto, and P. Fung, "Survey of Hallucination in Natural Language Generation," *ACM Computing Surveys*, vol. 55, no. 12, pp. 1–38, 2023. doi: [10.1145/3571730](https://doi.org/10.1145/3571730)
+[4] A. Z. Ren, B. Govil, T.-Y. Yang, K. Narasimhan, and A. Majumdar, “Robots
+That Ask for Help: Uncertainty-Aligned LLM Planning,” arXiv preprint
+arXiv:2307.01928, 2023.
 
-[5] L. Huang, W. Yu, W. Ma, W. Zhong, Z. Feng, H. Wang, Q. Chen, W. Peng, X. Feng, B. Qin, and T. Liu, "A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions," *arXiv preprint arXiv:2311.05232*, 2023. [https://arxiv.org/abs/2311.05232](https://arxiv.org/abs/2311.05232)
+[5] Z. Ji et al., “Survey of Hallucination in Natural Language Generation,” ACM Com-
+puting Surveys, vol. 55, no. 12, pp. 1–38, 2023. doi: 10.1145/3571730.
 
-[6] N. Shinn, F. Cassano, A. Gopinath, K. Narasimhan, and S. Yao, "Reflexion: Language Agents with Iterative Design Learning," in *Advances in Neural Information Processing Systems (NeurIPS)*, vol. 36, 2023.
+[6] L. Huang et al., “A Survey on Hallucination in Large Language Models: Princi-
+ples, Taxonomy, Challenges, and Open Questions,” arXiv preprint arXiv:2311.05232,
+2023.
 
-[7] A. D. Ames, S. Coogan, M. Egerstedt, G. Notomista, K. Sreenath, and P. Tabuada, "Control Barrier Functions: Theory and Applications," in *Proc. IEEE 18th European Control Conference (ECC)*, Naples, Italy, 2019, pp. 3420–3431. doi: [10.23919/ECC.2019.8796030](https://doi.org/10.23919/ECC.2019.8796030)
+[7] N. Shinn, F. Cassano, A. Gopinath, K. Narasimhan, and S. Yao, “Reflexion: Lan-
+guage Agents with Iterative Design Learning,” in Advances in Neural Information
+Processing Systems (NeurIPS), vol. 36, 2023.
 
-[8] R. Cheng, G. Orosz, R. M. Murray, and J. W. Burdick, "Safe Control with Learned Models: Optimality and Runtime Guarantees," *IEEE Transactions on Automatic Control*, 2023. doi: [10.1109/TAC.2023.3247173](https://doi.org/10.1109/TAC.2023.3247173)
+[8] A. D. Ames, S. Coogan, M. Egerstedt, G. Notomista, K. Sreenath, and P.
+Tabuada, “Control Barrier Functions: Theory and Application,” in Proc. IEEE
+18th European Control Conference (ECC), Naples, Italy, 2019, pp. 3420–3431. doi:
+10.23919/ECC.2019.8796030.
 
-[9] S. Gu et al., "Safe Multi-Agent Reinforcement Learning for Climbing Robots in Uncertain Environments," *Journal of Intelligent & Robotic Systems*, vol. 110, 2024.
+[9] R. Cheng, G. Orosz, R. M. Murray, and J. W. Burdick, “Safe Control with Learned
+Models: Optimality and Runtime Guarantees,” IEEE Transactions on Automatic
+Control, 2023. doi: 10.1109/TAC.2023.3247173.
 
-[10] H. K. Khalil, *Nonlinear Systems*, 3rd ed. Upper Saddle River, NJ: Prentice Hall, 2002. ISBN: 978-0130673893.
+[10] S. Gu et al., “Safe Multi-Agent Reinforcement Learning for Climbing Robots in
+Uncertain Environments,” Journal of Intelligent & Robotic Systems, vol. 110, 2024.
 
-[11] J.-J. E. Slotine and W. Li, *Applied Nonlinear Control*. Englewood Cliffs, NJ: Prentice Hall, 1991. ISBN: 978-0130408907.
+[11] H. K. Khalil, Nonlinear Systems, 3rd ed. Upper Saddle River, NJ, USA: Prentice
+Hall, 2002.
 
-[12] E. D. Sontag, "Input-to-State Stability: Basic Concepts and Results," in *Nonlinear Dynamics and Operational Control*, P. Nistri and G. Stefani, Eds. Berlin: Springer, 1989, pp. 163–220.
+[12] J.-J. E. Slotine and W. Li, Applied Nonlinear Control. Englewood Cliffs, NJ, USA:
+Prentice Hall, 1991.
+11
+
+[13] E. D. Sontag, “Input-to-State Stability: Basic Concepts and Results,” in Nonlinear
+Dynamics and Operational Control, P. Nistri and G. Stefani, Eds. Berlin, Germany:
+Springer, 1989, pp. 163–220.
+
+[14] Y. Tassa, Y. Doron, A. Muldal, T. Erez, Y. Li, S. de Freitas, N. Heess, and M. Ried-
+miller, “dm control: Software and Tasks for Continuous Control,” arXiv:1801.00690
+(2018).
+
+[15] P. Lewis, E. Perez, A. Piktus, F. Petroni, V. Karpukhin, N. Goyal, H. K¨uttler,
+M. Lewis, W. Yih, T. Rockt¨aschel, S. Riedel, and D. Kiela, “Retrieval-Augmented
+Generation for Knowledge-Intensive NLP Tasks,” Advances in Neural Information
+Processing Systems (NeurIPS), 2020.
