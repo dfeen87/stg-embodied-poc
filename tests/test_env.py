@@ -48,9 +48,18 @@ def _make_dm_control_mock():
     physics.data.contact = []
     physics.model.id2name = lambda gid, kind: f"geom_{gid}"
 
+    # Build observation spec mock (mirrors obs_dict shapes)
+    obs_spec = {
+        "egocentric_state": MagicMock(shape=(18,)),
+        "velocimeter": MagicMock(shape=(3,)),
+        "imu": MagicMock(shape=(6,)),
+        "force_torque": MagicMock(shape=(24,)),
+    }
+
     # Build env mock
     env_mock = MagicMock()
     env_mock.action_spec.return_value = action_spec
+    env_mock.observation_spec.return_value = obs_spec
     env_mock.reset.return_value = make_time_step(last=False, reward=0.0)
     env_mock.step.return_value = make_time_step(last=False, reward=0.1)
     env_mock.physics = physics

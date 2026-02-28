@@ -18,7 +18,7 @@ import numpy as np
 try:
     from dm_control import suite
     _DM_CONTROL_AVAILABLE = True
-except ImportError:  # pragma: no cover
+except (ImportError, AttributeError, RuntimeError):  # pragma: no cover
     _DM_CONTROL_AVAILABLE = False
 
 # Terrain classification thresholds (torso x position)
@@ -95,9 +95,9 @@ class QuadrupedTerrainEnv:
         self._action_high = action_spec.maximum.copy()
         self._action_dim_val: int = int(action_spec.shape[0])
 
-        # Compute obs dim by doing a temporary reset
-        ts = self._env.reset()
-        self._obs_dim_val: int = self._flatten_obs(ts.observation).shape[0]
+        # Compute obs dim from observation_spec (avoids triggering a rendering reset)
+        obs_spec = self._env.observation_spec()
+        self._obs_dim_val: int = int(sum(np.prod(spec.shape) for spec in obs_spec.values()))
 
     # ------------------------------------------------------------------
     # Properties

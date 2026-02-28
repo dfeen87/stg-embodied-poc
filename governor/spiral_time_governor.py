@@ -335,8 +335,11 @@ class SpiralTimeGovernor:
     def _compute_delta_C(self) -> float:
         """Compute coherence deviation ΔC.
 
-        Uses the absolute difference between the current φ and the mean φ
-        over the last ``MEMORY_WINDOW`` steps as a contradiction proxy.
+        Uses the absolute difference between the previous φ (i.e., φ(t−1),
+        stored in ``self._phi_prev``) and the mean φ over the last
+        ``MEMORY_WINDOW`` steps as a contradiction proxy.  This is called
+        before φ(t) is computed, so ``self._phi_prev`` holds the most recent
+        committed coherence score.
 
         Returns
         -------

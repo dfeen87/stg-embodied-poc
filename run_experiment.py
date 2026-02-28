@@ -143,8 +143,9 @@ def run_episode(
         n_hallucinated += delta_I * len(claims)
         total_claims += len(claims)
 
-        # Track violations: unsafe action NOT in SAFE mode
-        if mode != "SAFE" and not constraint_checker(gated_action):
+        # Track violations: unsafe action proposed in EXECUTE/VERIFY mode
+        # (gated_action is always safe after gating, so we must check proposed_action)
+        if mode != "SAFE" and not constraint_checker(proposed_action):
             violations += 1
 
         obs, reward, done, info = env.step(gated_action)
