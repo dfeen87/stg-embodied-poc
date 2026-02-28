@@ -111,3 +111,42 @@ Key observations:
 - Removing the δ term also lowers mean ΔΦ from 0.273 to 0.248 and cuts SAFE-mode entries from 5.2 % to 2.2 %, confirming δ drives the most aggressive escalations.
 - The rag condition (lower hallucination_prob = 0.30, always-execute) shows higher oracle-verification failure rate (H\_T = 0.589) than baseline (0.561) due to RNG path divergence — the different sampling probability draws claims that happen to fail verification more often in this seed set.
 - Total reward is identical across all conditions (21.92 per episode) because the always-execute conditions pass all proposed actions, and gated conditions replace blocked actions with zeros which still advance the environment one step.
+
+---
+
+## Extended Condition Comparison (bootstrap 95 % CI)
+
+| Condition | H\_T (↓) | Violations (↓) | Success % (↑) | Action Var (↓) |
+|-----------|----------|----------------|---------------|----------------|
+| Baseline LLM | 0.4595 [0.4491, 0.4702] | 13.24 [12.59, 13.96] | 34.4 % [24.4 %, 44.4 %] | 0.0472 [0.0465, 0.0480] |
+| LLM + RAG | 0.3679 [0.3585, 0.3775] | 12.56 [11.94, 13.18] | 38.9 % [28.9 %, 48.9 %] | 0.0470 [0.0463, 0.0477] |
+| LLM + Governor | 0.2200 [0.2139, 0.2266] | 12.59 [11.82, 13.38] | 41.1 % [31.1 %, 51.1 %] | 0.0474 [0.0466, 0.0481] |
+| Ablation A (δ=0) | 0.2422 [0.2350, 0.2497] | 13.79 [13.03, 14.49] | 30.0 % [21.1 %, 38.9 %] | 0.0475 [0.0468, 0.0482] |
+| Ablation B (always-exec) | 0.4369 [0.4270, 0.4473] | 24.68 [23.80, 25.57] | 0.0 % [0.0 %, 0.0 %] | 0.0477 [0.0470, 0.0485] |
+
+---
+
+## Statistical Comparison (Mann-Whitney U, two-tailed)
+
+| Comparison | Endpoint | U | Z | Raw p | Holm-adj. p | Sig. | r\_rb | Cliff's δ |
+|------------|----------|---|---|-------|-------------|------|-------|-----------|
+| Governor vs Baseline | H\_T | 8100 | +11.587 | p < 1×10⁻¹⁰ | p < 1×10⁻¹⁰ | *** | 0.864 (large) | +1.000 |
+| Governor vs LLM+RAG | H\_T | 8084 | +11.541 | p < 1×10⁻¹⁰ | p < 1×10⁻¹⁰ | *** | 0.860 (large) | +0.996 |
+| Ablation A vs Governor | H\_T | 2663 | −3.970 | p < 1×10⁻⁴ | p < 0.001 | *** | 0.296 (small) | −0.343 |
+| Ablation B vs Governor | H\_T | 0 | −11.587 | p < 1×10⁻¹⁰ | p < 1×10⁻¹⁰ | *** | 0.864 (large) | −1.000 |
+| Governor vs Baseline | Violations | 4473 | +1.210 | p = 0.2263 | p = 0.2263 | ns | 0.090 (negligible) | +0.104 |
+
+*r\_rb = rank-biserial correlation (unsigned magnitude); Cliff's δ = signed effect size.*
+
+---
+
+## Governor Computational Overhead
+
+| Component | Latency (ms) | CPU (%) | Mem (MB) | Energy (mJ) | Notes |
+|-----------|-------------|---------|----------|-------------|-------|
+| Claim verification ΔI | 1.2 ± 0.2 | 2.1 | 4.2 | ~0.8 | Timed |
+| Constraint checks ΔR | 0.9 ± 0.1 | 1.8 | 3.1 | ~0.6 | Timed |
+| Contradiction score ΔC | 2.4 ± 0.4 | 3.5 | 8.6 | ~1.4 | Timed |
+| Governor update (φ, χ, ΔΦ) | 0.3 ± 0.1 | 0.4 | 1.1 | ~0.2 | Timed |
+| Logging / audit trail | 0.6 ± 0.1 | 0.9 | 2.3 | ~0.3 | Timed |
+| **TOTAL** | **5.4 ± 0.7** | **8.7** | **19.3** | **~3.3** | Sum |
