@@ -117,6 +117,12 @@ class TestVerifyClaim:
     def test_empty_claim_passes(self):
         assert _verify_claim("", {}) is True
 
+    def test_punctuation_handled_correctly(self):
+        assert _verify_claim("terrain is flat.", {"terrain_class": 0}) is True
+        assert _verify_claim("terrain is flat.", {"terrain_class": 1}) is False
+        assert _verify_claim("feasible, stable!", {"feasible": True}) is True
+        assert _verify_claim("feasible, stable!", {"feasible": False}) is False
+
 
 # ---------------------------------------------------------------------------
 # SpiralTimeGovernor — construction and reset

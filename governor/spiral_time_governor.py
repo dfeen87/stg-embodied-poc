@@ -16,6 +16,7 @@ Mathematical specification (from paper):
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 from typing import Callable, Dict, List, Literal, Tuple
 
 import numpy as np
@@ -114,7 +115,9 @@ def _verify_claim(claim: str, oracle: Dict) -> bool:
     bool
         ``True`` if the claim passes verification, ``False`` otherwise.
     """
-    tokens = claim.lower().split()
+    # Strip punctuation (like . , ! ?) so exact token matching works
+    clean_claim = re.sub(r'[.,!?]', '', claim.lower())
+    tokens = clean_claim.split()
     for tok in tokens:
         if tok in ("feasible", "stable"):
             if not oracle.get("feasible", False):
