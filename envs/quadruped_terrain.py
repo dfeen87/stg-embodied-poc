@@ -21,6 +21,8 @@ try:
 except (ImportError, AttributeError, RuntimeError):  # pragma: no cover
     _DM_CONTROL_AVAILABLE = False
 
+from config import MAX_STEPS as _MAX_STEPS
+
 # Terrain classification thresholds (torso x position)
 _TERRAIN_FLAT_MAX: float = 2.0    # x < 2.0  → class 0 (flat)
 _TERRAIN_INCLINE_MAX: float = 5.0  # 2.0 ≤ x < 5.0 → class 1 (incline)
@@ -28,9 +30,6 @@ _TERRAIN_INCLINE_MAX: float = 5.0  # 2.0 ≤ x < 5.0 → class 1 (incline)
 
 # Foot geom names in dm_control quadruped model
 _FOOT_GEOM_NAMES: List[str] = ["lf_foot", "rf_foot", "lh_foot", "rh_foot"]
-
-# Maximum episode steps
-_MAX_STEPS: int = 120
 
 
 def _classify_terrain(x: float) -> int:
