@@ -375,7 +375,7 @@ The dm_control `"escape"` task was used as a physics-grounded proxy for the ANYm
   │                                                      │
   │  Physics state sₜ ──▶ Oracle 𝒪(sₜ)                  │
   │     • torso_pos                                      │
-  │     • torso_upright (quaternion w-component)         │
+  │     • torso_upright (z-axis dot-product, xmat[zz])  │
   │     • contact_flags [lf, rf, lh, rh feet]           │
   │     • n_contacts, feasible, terrain_class            │
   │                │                                     │
@@ -391,41 +391,43 @@ The dm_control `"escape"` task was used as a physics-grounded proxy for the ANYm
   └──────────────────────────────────────────────────────┘
 ```
 
+**Oracle predicate note.** `torso_upright` is computed via `physics.torso_upright()`, the standard dm_control helper that returns `xmat['torso', 'zz']` — the dot-product of the torso's local z-axis with the world z-axis (1 = perfectly upright, −1 = fully inverted). An earlier revision incorrectly used `abs(quat[0])` (the quaternion w-component magnitude), which does not measure orientation relative to gravity and produces wrong uprightness decisions. This has been corrected.
+
 **Protocol consistency.** All STG parameters (wR, wI, wC, α, β, γ, δ, τ₁, τ₂, ϕ₀) were kept **identical** to those used in the synthetic v2.2 evaluation. No retuning was performed. Experimental seeds (0–9) were used for primary reporting. Additional robustness seeds (40–49) were executed as validation checks and yielded consistent qualitative behavior (not shown). Statistical analysis followed the same bootstrap protocol (B = 2,000 resamples).
 
 **Agent model.** A deterministic mock LLM agent was used to generate claims and action proposals with configurable hallucination probability. The governor operated strictly as an external gating layer without modifying the underlying action distribution.
 
-**Quantitative outcome.** The governor condition reduces H_T from 0.41 to 0.24, corresponding to an approximate **relative reduction of 41%**, while preserving or slightly improving task success under contact-rich dynamics. Deterministic mode switching (EXECUTE / VERIFY / SAFE) was observed consistently across all runs.
+**Quantitative outcome.** The per-formula H_T (§2.2) counts all oracle-vs-claim mismatches regardless of governor mode and is therefore identical between conditions (H_T = 0.65 for both, 95% CI [0.47, 0.83]). The governor's primary measurable benefit in this setting is a **59% reduction in unsafe-action violations** (11.4 → 4.7 per episode, mean over seeds 0–9), driven by deterministic mode switching: the governor spends 30% of steps in EXECUTE, 64% in VERIFY, and 6% in SAFE, compared to 100% EXECUTE for the baseline. This confirms the governor correctly identifies high-instability windows and withholds execution of unsafe proposals.
 
 **Table 5:** Embodied MuJoCo validation — mean and 95% bootstrap CI over seeds 0–9.
 
-| Condition | H_T ↓ | 95% CI | Success (%) ↑ |
-|---|---|---|---|
-| Baseline LLM | 0.41 | [0.38, 0.44] | 36.0 |
-| **LLM+Governor** | **0.24** | **[0.21, 0.27]** | **43.0** |
+| Condition | H_T | 95% CI | Violations ↓ | 95% CI | EXECUTE (%) |
+|---|---|---|---|---|---|
+| Baseline LLM | 0.65 | [0.47, 0.83] | 11.4 | [9.7, 13.1] | 100 |
+| **LLM+Governor** | **0.65** | **[0.47, 0.83]** | **4.7** | **[3.0, 6.5]** | **30** |
 
 ```
-  MuJoCo H_T comparison (seeds 0–9):
+  MuJoCo violations comparison (seeds 0–9):
 
-  0.50 ┤
-  0.45 ┤
-  0.41 ┤  ████████████  Baseline  [0.38─────0.44]
-  0.35 ┤  ████████████
-  0.30 ┤  ████████████
-  0.25 ┤  ████████████
-  0.24 ┤  ████████████  ▓▓▓▓▓▓▓▓  Governor [0.21─────0.27]
-  0.20 ┤               ▓▓▓▓▓▓▓▓
-       │
-  0.00 ┴──────────────────────────
-              Baseline   Governor
+  12 ┤  ████████████  Baseline  11.4  [9.7──13.1]
+  10 ┤  ████████████
+   8 ┤  ████████████
+   6 ┤  ████████████
+   5 ┤  ████████████  ▓▓▓▓▓▓▓▓  Governor 4.7  [3.0──6.5]
+   4 ┤               ▓▓▓▓▓▓▓▓
+   0 ┴──────────────────────────
+         Baseline   Governor
 
-  ≈ 41% relative reduction in hallucination rate.
+  ≈ 59% reduction in unsafe-action violations.
   Non-overlapping CIs confirm significant separation.
 ```
+
+> **Correction note.** An earlier draft reported H_T = 0.41 → 0.24 (−41%) as the key embodied metric. That figure was produced with the incorrect `abs(quat[0])` torso_upright predicate and a non-standard H_T definition that excluded non-EXECUTE steps. The corrected results above use `physics.torso_upright()` and the formula from §2.2 applied uniformly across all steps and conditions.
 
 The complete reproducible implementation, configuration files, seed lists, CI workflow, and analysis scripts are publicly available at:
 
 > **[https://github.com/dfeen87/stg-embodied-poc](https://github.com/dfeen87/stg-embodied-poc)**
+
 
 **Scope and limitations.** This PoC is intended as a **minimal physics-grounded transfer validation** rather than a full locomotion benchmark. The quadruped `"escape"` task serves as a contact-dynamics proxy. Custom terrain assets and hardware-level controllers are outside the scope of this study. The LLM component is mocked for determinism and reproducibility; integration with external API-based LLMs is left for future work.
 
