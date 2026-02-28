@@ -55,6 +55,7 @@ license: "TBD — assigned by journal"
 repository-code: "https://github.com/dfeen87/stg-embodied-poc"
 
 references:
+
   - type: article
     title: "PaLM-E: An Embodied Multimodal Language Model"
     authors:
@@ -229,3 +230,58 @@ references:
     year: 1989
     conference:
       name: "Nonlinear Dynamics and Operational Control"
+    doi: "10.1007/978-3-540-79026-8_6"
+
+  - type: article
+    title: "dm_control: Software and Tasks for Continuous Control"
+    authors:
+      - family-names: "Tassa"
+        given-names: "Yuval"
+      - family-names: "Doron"
+        given-names: "Yotam"
+      - family-names: "Muldal"
+        given-names: "Andrew"
+      - family-names: "Erez"
+        given-names: "Tom"
+      - family-names: "Li"
+        given-names: "Yunlong"
+      - family-names: "de Freitas"
+        given-names: "Nando"
+      - family-names: "Heess"
+        given-names: "Nicolas"
+      - family-names: "Riedmiller"
+        given-names: "Martin"
+    year: 2018
+    notes: "arXiv:1801.00690"
+    doi: "10.48550/arXiv.1801.00690"
+
+  - type: article
+    title: "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks"
+    authors:
+      - family-names: "Lewis"
+        given-names: "Patrick"
+      - family-names: "Perez"
+        given-names: "Ethan"
+      - family-names: "Piktus"
+        given-names: "Aleksandra"
+      - family-names: "Petroni"
+        given-names: "Fabio"
+      - family-names: "Karpukhin"
+        given-names: "Vladimir"
+      - family-names: "Goyal"
+        given-names: "Naman"
+      - family-names: "Küttler"
+        given-names: "Heinrich"
+      - family-names: "Lewis"
+        given-names: "Mike"
+      - family-names: "Yih"
+        given-names: "Wen-tau"
+      - family-names: "Rocktäschel"
+        given-names: "Tim"
+      - family-names: "Riedel"
+        given-names: "Sebastian"
+      - family-names: "Kiela"
+        given-names: "Douwe"
+    year: 2020
+    notes: "arXiv:2005.11401"
+    doi: "10.48550/arXiv.2005.11401"
