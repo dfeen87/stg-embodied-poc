@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  lint-and-test:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install lightweight dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Install only the packages required for tests (exclude mujoco/dm_control
+          # which need a full MuJoCo installation — the test suite mocks them).
+          pip install numpy scipy pandas tqdm pytest flake8
+
+      - name: Lint with flake8
+        run: |
+          # Treat errors as CI failures; warn on style issues (E501 long lines,
+          # W503 line-break-before-operator) without blocking.
+          flake8 . \
+            --count \
+            --select=E9,F63,F7,F82 \
+            --show-source \
+            --statistics
+          flake8 . \
+            --count \
+            --exit-zero \
+            --max-line-length=100 \
+            --statistics
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v --tb=short
