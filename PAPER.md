@@ -5,10 +5,13 @@ Marcel Krüger¹
 Don Michael Feeney Jr²
 
 ¹ Independent Researcher, Germany
+
 ² Independent Researcher, USA
 
 Corresponding author: [marcelkrueger092@gmail.com](mailto:marcelkrueger092@gmail.com)
+
 ORCID (M.K.): [0009-0002-5709-9729](https://orcid.org/0009-0002-5709-9729)
+
 ORCID (D.M.F.): [0009-0003-1350-4160](https://orcid.org/0009-0003-1350-4160)
 
 *Journal of Climbing and Walking Robots* · 2026 · Vol. XX(XX) · pp. 1–XX
