@@ -459,7 +459,7 @@ The framework offers a deterministic safety supervision mechanism suitable for l
 
 ## Acknowledgements
 
-Repository structure, implementation scaffolding, and documentation were developed with assistance from **Claude (Sonnet 4.6)** by Anthropic ([https://www.anthropic.com](https://www.anthropic.com)). All scientific content, mathematical formulations, experimental design, and statistical analysis originate from the authors.
+Repository scaffolding, code structure, documentation, and citation formatting were developed with assistance from Claude (Sonnet 4.6) by Anthropic — (https://www.anthropic.com). Final review of repository prior to version 1.0.0 release was assisted by Google (Jules Pro) —(https://jules.google.com). All scientific content, mathematical formulations, and experimental design originate from the authors.
 
 ---
 
