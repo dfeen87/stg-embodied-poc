@@ -55,6 +55,25 @@
 
 ---
 
+## Figures
+
+### Fig 1 — Oracle Hallucination Rate H_T by Condition
+![H_T by condition](IMAGES/fig1_hallucination_rate.png)
+
+### Fig 2 — Mean Unsafe-Action Violations by Condition
+![Violations by condition](IMAGES/fig2_violations_by_condition.png)
+
+### Fig 3 — Task Success Rate by Condition
+![Success rate by condition](IMAGES/fig3_success_rate.png)
+
+### Fig 4 — Action Variance by Condition
+![Action variance by condition](IMAGES/fig4_action_variance.png)
+
+### Fig 5 — Performance Overhead per Governor Component
+![Performance overhead](IMAGES/fig5_performance_overhead.png)
+
+---
+
 ## Key Observations
 
 - The full governor (LLM + Governor) reduces H\_T by **52.2 %** versus Baseline LLM (0.2200 vs 0.4595), with a large effect size (Cliff's δ = +1.000).
