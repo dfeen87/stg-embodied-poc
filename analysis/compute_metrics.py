@@ -18,13 +18,16 @@ from typing import Any, Dict, List
 import pandas as pd
 
 
-def compute_metrics(episode_result: Dict[str, Any]) -> Dict[str, Any]:
+def compute_metrics(episode_result: Dict[str, Any], results_dir: Path | None = None) -> Dict[str, Any]:
     """Compute summary metrics from a single episode result dict.
 
     Parameters
     ----------
     episode_result:
         Dict as returned by ``run_experiment.run_episode``.
+    results_dir:
+        Optional Path to the results directory. If provided and step_logs
+        are missing, it will attempt to load them from `{condition}_steps.csv`.
 
     Returns
     -------
@@ -32,10 +35,26 @@ def compute_metrics(episode_result: Dict[str, Any]) -> Dict[str, Any]:
         Summary metrics for the episode.
     """
     logs = episode_result.get("step_logs", [])
+    condition = episode_result.get("condition", "unknown")
+    seed = episode_result.get("seed", -1)
+
+    if not logs and results_dir is not None:
+        csv_path = results_dir / f"{condition}_steps.csv"
+        if csv_path.exists():
+            try:
+                # Load the CSV and filter for the specific seed
+                steps_df = pd.read_csv(csv_path)
+                seed_df = steps_df[steps_df["seed"] == seed]
+                # Drop condition and seed columns to match original step_logs format
+                seed_df = seed_df.drop(columns=["condition", "seed"], errors="ignore")
+                logs = seed_df.to_dict(orient="records")
+            except Exception:
+                pass
+
     if not logs:
         return {
-            "condition": episode_result.get("condition", "unknown"),
-            "seed": episode_result.get("seed", -1),
+            "condition": condition,
+            "seed": seed,
             "n_steps": 0,
             "mean_phi": float("nan"),
             "mean_delta_phi": float("nan"),
@@ -80,20 +99,22 @@ def compute_metrics(episode_result: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def summarise_runs(results: List[Dict[str, Any]]) -> pd.DataFrame:
+def summarise_runs(results: List[Dict[str, Any]], results_dir: Path | None = None) -> pd.DataFrame:
     """Aggregate metrics across multiple episode results.
 
     Parameters
     ----------
     results:
         List of dicts as returned by ``run_experiment.run_episode``.
+    results_dir:
+        Optional Path to the results directory.
 
     Returns
     -------
     pd.DataFrame
         One row per episode with all computed metrics.
     """
-    rows = [compute_metrics(r) for r in results]
+    rows = [compute_metrics(r, results_dir) for r in results]
     return pd.DataFrame(rows)
 
 
@@ -126,7 +147,7 @@ def main(argv: list | None = None) -> None:
     with open(json_path) as f:
         results = json.load(f)
 
-    summary_df = summarise_runs(results)
+    summary_df = summarise_runs(results, results_dir)
     print("\n=== Per-episode metrics ===")
     print(summary_df.to_string(index=False))
 
