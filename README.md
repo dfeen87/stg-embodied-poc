@@ -171,10 +171,11 @@ If you use this code, please cite the companion paper (placeholder — update wh
   year    = {2026},
 }
 ```
-
 ---
 
-## Acknowledgements
+MIT License - see [`LICENSE`](LICENSE) file.
+
+---
 
 ## Acknowledgments
 
