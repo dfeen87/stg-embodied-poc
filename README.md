@@ -176,4 +176,7 @@ If you use this code, please cite the companion paper (placeholder — update wh
 
 ## Acknowledgements
 
-Repository scaffolding, code structure, documentation, and citation formatting were developed with assistance from Claude (Sonnet 4.6) by Anthropic — (https://www.anthropic.com). Final review of repository prior to version 1.0.0 release was assisted by Google (Jules Pro) — (https://jules.google.com). All scientific content, mathematical formulations, and experimental design originate from the authors.
+## Acknowledgments
+
+This repository was developed with a combination of original ideas, hands‑on coding, and support from advanced AI systems. I would like to acknowledge **Microsoft Copilot**, **Anthropic Claude**, and **Google Jules** for their meaningful assistance in refining concepts, improving clarity, and strengthening the overall quality of this work. Original science and math was created by the authors. 
+
