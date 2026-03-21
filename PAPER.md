@@ -55,19 +55,16 @@ This paper targets a specific failure class: hallucinated assertions or action r
   <text x="125" y="60" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#1b5e20">EXECUTE</text>
   <text x="125" y="80" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2e7d32">Normal operation</text>
   <text x="125" y="97" text-anchor="middle" font-family="monospace" font-size="10" fill="#388e3c">ΔΦ(t) &lt; τ₁</text>
-  <text x="125" y="112" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#388e3c">τ₁ = 0.25</text>
   <!-- VERIFY box -->
   <rect x="255" y="30" width="170" height="90" rx="10" fill="#fff8e1" stroke="#f57f17" stroke-width="1.2"/>
   <text x="340" y="60" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#e65100">VERIFY</text>
   <text x="340" y="80" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#f57f17">Cross-check &amp; validate</text>
   <text x="340" y="97" text-anchor="middle" font-family="monospace" font-size="10" fill="#fb8c00">τ₁ ≤ ΔΦ(t) &lt; τ₂</text>
-  <text x="340" y="112" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#fb8c00">τ₁=0.25, τ₂=0.55</text>
   <!-- SAFE box -->
   <rect x="470" y="30" width="170" height="90" rx="10" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
   <text x="555" y="60" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#b71c1c">SAFE</text>
   <text x="555" y="80" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#c62828">Freeze + fallback</text>
   <text x="555" y="97" text-anchor="middle" font-family="monospace" font-size="10" fill="#e53935">ΔΦ(t) ≥ τ₂</text>
-  <text x="555" y="112" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#e53935">τ₂ = 0.55</text>
   <!-- arrows -->
   <line x1="210" y1="75" x2="253" y2="75" stroke="#888" stroke-width="1.2" marker-end="url(#arr1)"/>
   <line x1="425" y1="75" x2="468" y2="75" stroke="#888" stroke-width="1.2" marker-end="url(#arr1)"/>
@@ -75,7 +72,7 @@ This paper targets a specific failure class: hallucinated assertions or action r
   <text x="340" y="148" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">ΔΦ(t) increases →  instability grows →  more conservative mode</text>
 </svg>
 
-*Figure 1: The three deterministic operating modes of the Spiral-Time Governor, triggered by the instability functional ΔΦ(t) against fixed thresholds τ₁ = 0.25 and τ₂ = 0.55.*
+*Illustration A: The three deterministic operating modes of the Spiral-Time Governor, triggered by the instability functional ΔΦ(t) against thresholds 0 < τ₁ < τ₂ < 1.*
 
 ### Contributions
 
@@ -137,7 +134,7 @@ An LLM-based module proposes high-level outputs â_t (tool calls, subgoals, text
   <line x1="535" y1="163" x2="535" y2="108" stroke="#e65100" stroke-width="1.2" marker-end="url(#arr2)"/>
   <line x1="445" y1="163" x2="480" y2="130" stroke="#e65100" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#arr2)"/>
   <!-- label -->
-  <text x="340" y="280" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 2: Robot autonomy stack with LLM module and deterministic Governor 𝒢.</text>
+  <text x="340" y="280" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Illustration B: Robot autonomy stack with LLM module and deterministic Governor 𝒢.</text>
 </svg>
 
 ### 2.2 · Oracle-Based Hallucination Definition
@@ -208,7 +205,7 @@ Here ϕ(t) ∈ [0, 1] is a deterministic coherence score and χ(t) captures abru
   <text x="448" y="230" font-family="serif" font-size="12" font-style="italic" fill="#6a1b9a">χ(t) = ϕ(t) − ϕ(t−1)</text>
   <text x="448" y="252" font-family="sans-serif" font-size="10" fill="#555">captures abrupt divergence</text>
   <!-- caption -->
-  <text x="340" y="288" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 3: Triadic Spiral-Time state space. ψ(t) traces a path as coherence and torsion evolve.</text>
+  <text x="340" y="288" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Illustration C: Triadic Spiral-Time state space. ψ(t) traces a path as coherence and torsion evolve.</text>
 </svg>
 
 ### 3.2 · Deterministic Coherence Components
@@ -240,22 +237,22 @@ $$\boxed{\Delta\Phi(t) := \alpha\,\Delta R(t) + \beta\,\Delta I(t) + \gamma\,\De
   <rect x="40" y="30" width="118" height="64" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
   <text x="99" y="54" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#1b5e20">ΔR(t)</text>
   <text x="99" y="72" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#2e7d32">Structure</text>
-  <text x="99" y="86" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#388e3c">α = 0.25</text>
+  <text x="99" y="86" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#388e3c">weight α</text>
   <!-- ΔI component -->
   <rect x="185" y="30" width="118" height="64" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="1"/>
   <text x="244" y="54" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#0d47a1">ΔI(t)</text>
   <text x="244" y="72" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1565c0">Information</text>
-  <text x="244" y="86" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1976d2">β = 0.35</text>
+  <text x="244" y="86" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1976d2">weight β</text>
   <!-- ΔC component -->
   <rect x="330" y="30" width="118" height="64" rx="8" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1"/>
   <text x="389" y="54" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#4a148c">ΔC(t)</text>
   <text x="389" y="72" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6a1b9a">Coherence</text>
-  <text x="389" y="86" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#7b1fa2">γ = 0.25</text>
+  <text x="389" y="86" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#7b1fa2">weight γ</text>
   <!-- |χ(t)| component -->
   <rect x="475" y="30" width="118" height="64" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1"/>
   <text x="534" y="54" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#bf360c">|χ(t)|</text>
   <text x="534" y="72" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#e65100">Torsion</text>
-  <text x="534" y="86" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#f57c00">δ = 0.15</text>
+  <text x="534" y="86" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#f57c00">weight δ</text>
   <!-- arrows down to ΔΦ -->
   <line x1="99"  y1="94" x2="310" y2="158" stroke="#2e7d32" stroke-width="1" marker-end="url(#arr4)"/>
   <line x1="244" y1="94" x2="320" y2="158" stroke="#1565c0" stroke-width="1" marker-end="url(#arr4)"/>
@@ -265,7 +262,7 @@ $$\boxed{\Delta\Phi(t) := \alpha\,\Delta R(t) + \beta\,\Delta I(t) + \gamma\,\De
   <rect x="265" y="158" width="150" height="44" rx="8" fill="#212121" stroke="#424242" stroke-width="1.5"/>
   <text x="340" y="177" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#fff">ΔΦ(t)</text>
   <text x="340" y="194" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#bdbdbd">instability scalar</text>
-  <text x="340" y="214" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#777">Figure 4: ΔΦ(t) is a weighted sum of four deterministic deviation signals.</text>
+  <text x="340" y="214" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#777">Illustration D: ΔΦ(t) is a weighted sum of four deterministic deviation signals (α+β+γ+δ=1).</text>
 </svg>
 
 ### 3.4 · Deterministic Mode Switching
@@ -369,7 +366,7 @@ Thresholds 0 < τ₁ < τ₂ < 1 define:
   <path d="M340 327 Q180 330 115 132" fill="none" stroke="#c62828" stroke-width="1" stroke-dasharray="5 3" marker-end="url(#arr5)"/>
   <text x="190" y="340" font-family="sans-serif" font-size="10" fill="#c62828">feedback</text>
   <!-- Legend labels -->
-  <text x="340" y="355" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 5: Governor-centered architecture. The STG gates all LLM outputs before execution.</text>
+  <text x="340" y="355" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Illustration E: Governor-centered architecture. The STG gates all LLM outputs before execution. (See Figure 1 in paper.)</text>
 </svg>
 
 ---
@@ -429,7 +426,7 @@ Let **V(x) = xᵀPx**.
   <text x="210" y="104" font-family="sans-serif" font-size="10" fill="#1565c0">exponential decay</text>
   <text x="380" y="150" font-family="sans-serif" font-size="10" fill="#c62828">c₁·η̄  (bounded residual)</text>
   <!-- Description -->
-  <text x="310" y="218" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 6: ISS-style decay of governor state ‖x(t)‖. The system converges to a ball of radius c₁η̄.</text>
+  <text x="310" y="218" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Illustration F: ISS-style decay of governor state ‖x(t)‖. The system converges to a ball of radius c₁η̄.</text>
 </svg>
 
 ---
@@ -502,7 +499,7 @@ All analyses use **α = 0.05** (two-tailed). CI: bootstrap percentile (B = 2,000
   <!-- Y axis label -->
   <text x="32" y="115" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555" transform="rotate(-90,32,115)">Hallucination Rate H_T ↓</text>
   <!-- Caption -->
-  <text x="340" y="244" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 7: H_T by condition (lower is better). LLM+Governor achieves the lowest hallucination rate.</text>
+  <text x="340" y="244" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Illustration G: H_T by condition (lower is better). LLM+Governor achieves the lowest hallucination rate.</text>
 </svg>
 
 **Table 3:** Pairwise comparisons (Mann–Whitney U, Holm-corrected).
@@ -547,64 +544,249 @@ To evaluate whether the Spiral-Time Governor transfers to a physics-grounded set
 | Baseline LLM | 0.65 | [0.47, 0.83] | 11.4 | [9.7, 13.1] | 100 |
 | **LLM+Governor** | **0.65** | **[0.47, 0.83]** | **4.7** | **[3.0, 6.5]** | **30** |
 
-<!-- FIGURE: MuJoCo Violations + Mode Split -->
+<!-- ILLUSTRATION H: MuJoCo Violations comparison -->
 <svg width="100%" viewBox="0 0 680 270" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
   <!-- LEFT PANEL: Violations comparison -->
   <rect x="30" y="15" width="290" height="220" rx="10" fill="#fafafa" stroke="#e0e0e0" stroke-width="1"/>
   <text x="175" y="38" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#333">Unsafe-Action Violations</text>
-  <!-- Y axis -->
   <line x1="70" y1="55" x2="70" y2="195" stroke="#555" stroke-width="1.2"/>
   <line x1="70" y1="195" x2="300" y2="195" stroke="#555" stroke-width="1.2"/>
-  <!-- Y labels -->
   <text x="64" y="59"  text-anchor="end" font-family="monospace" font-size="9" fill="#555">12</text>
   <text x="64" y="105" text-anchor="end" font-family="monospace" font-size="9" fill="#555">8</text>
   <text x="64" y="150" text-anchor="end" font-family="monospace" font-size="9" fill="#555">4</text>
   <text x="64" y="196" text-anchor="end" font-family="monospace" font-size="9" fill="#555">0</text>
-  <!-- gridlines -->
   <line x1="70" y1="59"  x2="300" y2="59"  stroke="#eee" stroke-width="1"/>
   <line x1="70" y1="105" x2="300" y2="105" stroke="#eee" stroke-width="1"/>
   <line x1="70" y1="150" x2="300" y2="150" stroke="#eee" stroke-width="1"/>
-  <!-- Baseline bar: 11.4 violations, max ~12=55, scale=(195-55)/12=11.67 -->
+  <!-- Baseline bar: 11.4 -->
   <rect x="105" y="62" width="65" height="133" fill="#ef5350"/>
-  <!-- CI whiskers: 9.7–13.1 -->
   <line x1="137" y1="47" x2="137" y2="80" stroke="#c62828" stroke-width="1.5"/>
   <line x1="127" y1="47" x2="147" y2="47" stroke="#c62828" stroke-width="1.2"/>
   <line x1="127" y1="80" x2="147" y2="80" stroke="#c62828" stroke-width="1.2"/>
   <text x="137" y="220" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#333">Baseline</text>
-  <text x="137" y="56"  text-anchor="middle" font-family="monospace" font-size="10" fill="#c62828">11.4</text>
+  <text x="137" y="56"  text-anchor="middle" font-family="monospace" font-size="10" fill="#c62828">11.4 [9.7–13.1]</text>
   <!-- Governor bar: 4.7 -->
   <rect x="210" y="140" width="65" height="55" fill="#43a047"/>
-  <!-- CI whiskers: 3.0–6.5 -->
   <line x1="242" y1="125" x2="242" y2="160" stroke="#1b5e20" stroke-width="1.5"/>
   <line x1="232" y1="125" x2="252" y2="125" stroke="#1b5e20" stroke-width="1.2"/>
   <line x1="232" y1="160" x2="252" y2="160" stroke="#1b5e20" stroke-width="1.2"/>
   <text x="242" y="220" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1b5e20" font-weight="700">Governor</text>
-  <text x="242" y="134" text-anchor="middle" font-family="monospace" font-size="10" fill="#1b5e20" font-weight="700">4.7 ★</text>
-  <!-- 59% label -->
-  <text x="175" y="235" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#e65100" font-weight="700">≈ 59% reduction · CIs non-overlapping</text>
-
-  <!-- RIGHT PANEL: Mode distribution pie-like bar -->
+  <text x="242" y="134" text-anchor="middle" font-family="monospace" font-size="10" fill="#1b5e20" font-weight="700">4.7 [3.0–6.5]</text>
+  <text x="175" y="240" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#e65100" font-weight="700">≈ 59% reduction · CIs non-overlapping</text>
+  <!-- RIGHT PANEL: EXECUTE mode comparison -->
   <rect x="350" y="15" width="300" height="220" rx="10" fill="#fafafa" stroke="#e0e0e0" stroke-width="1"/>
-  <text x="500" y="38" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#333">Governor Mode Distribution</text>
-  <!-- Stacked horizontal bar for Governor -->
+  <text x="500" y="38" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#333">EXECUTE Mode Fraction</text>
   <text x="370" y="68" font-family="sans-serif" font-size="11" fill="#333">Governor (STG active):</text>
-  <!-- EXECUTE 30% -->
   <rect x="370" y="78" width="84" height="30" fill="#43a047" rx="3"/>
   <text x="412" y="98" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#fff" font-weight="700">EXECUTE 30%</text>
-  <!-- VERIFY 64% -->
-  <rect x="454" y="78" width="179" height="30" fill="#ff8f00" rx="3"/>
-  <text x="543" y="98" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#fff" font-weight="700">VERIFY 64%</text>
-  <!-- SAFE 6% -->
-  <rect x="633" y="78" width="17" height="30" fill="#ef5350" rx="3"/>
-  <text x="380" y="128" font-family="monospace" font-size="9" fill="#43a047">30% EXECUTE</text>
-  <text x="380" y="142" font-family="monospace" font-size="9" fill="#ff8f00">64% VERIFY</text>
-  <text x="380" y="156" font-family="monospace" font-size="9" fill="#ef5350"> 6% SAFE</text>
-  <!-- Stacked bar for Baseline -->
-  <text x="370" y="180" font-family="sans-serif" font-size="11" fill="#333">Baseline (no governor):</text>
-  <rect x="370" y="188" width="280" height="30" fill="#ef9a9a" rx="3"/>
-  <text x="510" y="208" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#b71c1c" font-weight="700">EXECUTE 100% (no gating)</text>
-  <!-- caption -->
-  <text x="340" y="255" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 8: MuJoCo results. Left: 59% violation reduction (non-overlapping CIs). Right: mode distribution.</text>
+  <rect x="454" y="78" width="196" height="30" fill="#b0bec5" rx="3"/>
+  <text x="552" y="98" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#37474f" font-weight="700">other modes 70%</text>
+  <text x="370" y="140" font-family="sans-serif" font-size="11" fill="#333">Baseline (no governor):</text>
+  <rect x="370" y="150" width="280" height="30" fill="#ef9a9a" rx="3"/>
+  <text x="510" y="170" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#b71c1c" font-weight="700">EXECUTE 100% (no gating)</text>
+  <text x="500" y="205" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">Governor actively restricts execution</text>
+  <text x="500" y="220" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#555">in high-instability regimes (Table 5)</text>
+  <text x="340" y="258" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Illustration H: MuJoCo validation results. Left: violation counts with 95% CIs. Right: EXECUTE mode fraction (Table 5).</text>
+</svg>
+
+*See also: **Figure 2** in the paper (fig8_robustness_summary.png) — full 4-panel robustness summary.*
+
+<!-- FIGURE 2 (paper): Robustness Summary — 4-panel SVG recreation -->
+<svg width="100%" viewBox="0 0 680 560" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr9" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <!-- Title -->
+  <text x="340" y="22" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#333">Figure 2 — Robustness Summary</text>
+
+  <!-- ═══════════════ PANEL A ═══════════════ -->
+  <rect x="20" y="32" width="315" height="230" rx="8" fill="#fafafa" stroke="#ddd" stroke-width="1"/>
+  <text x="177" y="52" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#333">(A) Violation Rate vs Hallucination Rate H_T</text>
+  <text x="177" y="66" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#555">governor ↓ violations; H_T identical in MuJoCo</text>
+  <!-- Left y-axis: violations 0–16 -->
+  <line x1="58" y1="80" x2="58" y2="220" stroke="#555" stroke-width="1"/>
+  <line x1="58" y1="220" x2="280" y2="220" stroke="#555" stroke-width="1"/>
+  <text x="30" y="84" font-family="sans-serif" font-size="8" fill="#4472c4" text-anchor="middle" transform="rotate(-90,30,150)">Violation rate (unsafe actions/ep)</text>
+  <!-- y ticks violations (0–16, scale = 140/16 = 8.75px per unit) -->
+  <text x="54" y="222" text-anchor="end" font-family="monospace" font-size="8" fill="#555">0</text>
+  <text x="54" y="187" text-anchor="end" font-family="monospace" font-size="8" fill="#555">4</text>
+  <text x="54" y="152" text-anchor="end" font-family="monospace" font-size="8" fill="#555">8</text>
+  <text x="54" y="117" text-anchor="end" font-family="monospace" font-size="8" fill="#555">12</text>
+  <text x="54" y="83" text-anchor="end" font-family="monospace" font-size="8" fill="#555">16</text>
+  <line x1="56" y1="187" x2="280" y2="187" stroke="#eee" stroke-width="0.8"/>
+  <line x1="56" y1="152" x2="280" y2="152" stroke="#eee" stroke-width="0.8"/>
+  <line x1="56" y1="117" x2="280" y2="117" stroke="#eee" stroke-width="0.8"/>
+  <!-- violation bars: Baseline=13, Governor=4.7, RealLLM=5.7, NoisyOracle=6 -->
+  <!-- scale: 220 - val*8.75 -->
+  <rect x="68"  y="106" width="28" height="114" fill="#4472c4"/>
+  <rect x="118" y="179" width="28" height="41"  fill="#4472c4"/>
+  <rect x="168" y="170" width="28" height="50"  fill="#4472c4"/>
+  <rect x="218" y="167" width="28" height="53"  fill="#4472c4"/>
+  <!-- H_T orange bars (right axis, 0–1, scale=140): Baseline≈0.8, Gov≈0.77, Real≈0.82, Noisy≈0.8 -->
+  <rect x="96"  y="108" width="20" height="112" fill="#ed7d31" opacity="0.85"/>
+  <rect x="146" y="112" width="20" height="108" fill="#ed7d31" opacity="0.85"/>
+  <rect x="196" y="105" width="20" height="115" fill="#ed7d31" opacity="0.85"/>
+  <rect x="246" y="108" width="20" height="112" fill="#ed7d31" opacity="0.85"/>
+  <!-- right axis label -->
+  <text x="295" y="84" font-family="sans-serif" font-size="8" fill="#ed7d31" text-anchor="middle" transform="rotate(90,295,150)">Hallucination rate H_T</text>
+  <!-- x labels -->
+  <text x="82"  y="232" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#333">Baseline</text>
+  <text x="132" y="232" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#333">Governor</text>
+  <text x="182" y="232" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#333">Real LLM</text>
+  <text x="232" y="232" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#333">Noisy Oracle</text>
+  <!-- legend -->
+  <rect x="62" y="244" width="10" height="8" fill="#4472c4"/>
+  <text x="76" y="251" font-family="sans-serif" font-size="8" fill="#333">Violation rate</text>
+  <rect x="148" y="244" width="10" height="8" fill="#ed7d31"/>
+  <text x="162" y="251" font-family="sans-serif" font-size="8" fill="#333">Hallucination rate H_T</text>
+
+  <!-- ═══════════════ PANEL B ═══════════════ -->
+  <rect x="345" y="32" width="315" height="230" rx="8" fill="#fafafa" stroke="#ddd" stroke-width="1"/>
+  <text x="502" y="52" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#333">(B) Ablation Study</text>
+  <text x="502" y="66" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#555">necessity of all ΔΦ components</text>
+  <line x1="378" y1="80" x2="378" y2="220" stroke="#555" stroke-width="1"/>
+  <line x1="378" y1="220" x2="635" y2="220" stroke="#555" stroke-width="1"/>
+  <!-- dashed reference line at full governor = 4.87 -->
+  <!-- scale: 220 - val*(140/10)=14px per unit, 0–10 -->
+  <line x1="378" y1="152" x2="635" y2="152" stroke="#888" stroke-width="1" stroke-dasharray="5 3"/>
+  <text x="637" y="155" font-family="sans-serif" font-size="7" fill="#888">full gov=4.87</text>
+  <!-- y ticks 0–10 -->
+  <text x="374" y="222" text-anchor="end" font-family="monospace" font-size="8" fill="#555">0</text>
+  <text x="374" y="180" text-anchor="end" font-family="monospace" font-size="8" fill="#555">3</text>
+  <text x="374" y="138" text-anchor="end" font-family="monospace" font-size="8" fill="#555">6</text>
+  <text x="374" y="96"  text-anchor="end" font-family="monospace" font-size="8" fill="#555">9</text>
+  <line x1="376" y1="180" x2="635" y2="180" stroke="#eee" stroke-width="0.8"/>
+  <line x1="376" y1="138" x2="635" y2="138" stroke="#eee" stroke-width="0.8"/>
+  <!-- bars: FullGov=4.87→y=152, δ=0→9→y=94, removeI→7.3→y=118, removeC→6.8→y=125 -->
+  <rect x="393" y="152" width="42" height="68"  fill="#43a047"/>
+  <!-- error bars -->
+  <line x1="414" y1="138" x2="414" y2="166" stroke="#1b5e20" stroke-width="1.5"/>
+  <line x1="408" y1="138" x2="420" y2="138" stroke="#1b5e20" stroke-width="1"/>
+  <line x1="408" y1="166" x2="420" y2="166" stroke="#1b5e20" stroke-width="1"/>
+  <rect x="453" y="94"  width="42" height="126" fill="#e74c3c"/>
+  <line x1="474" y1="78" x2="474" y2="110" stroke="#c0392b" stroke-width="1.5"/>
+  <line x1="468" y1="78" x2="480" y2="78" stroke="#c0392b" stroke-width="1"/>
+  <line x1="468" y1="110" x2="480" y2="110" stroke="#c0392b" stroke-width="1"/>
+  <rect x="513" y="118" width="42" height="102" fill="#7e57c2"/>
+  <line x1="534" y1="102" x2="534" y2="134" stroke="#4527a0" stroke-width="1.5"/>
+  <line x1="528" y1="102" x2="540" y2="102" stroke="#4527a0" stroke-width="1"/>
+  <line x1="528" y1="134" x2="540" y2="134" stroke="#4527a0" stroke-width="1"/>
+  <rect x="573" y="125" width="42" height="95"  fill="#d4ac0d"/>
+  <line x1="594" y1="109" x2="594" y2="141" stroke="#9a7d0a" stroke-width="1.5"/>
+  <line x1="588" y1="109" x2="600" y2="109" stroke="#9a7d0a" stroke-width="1"/>
+  <line x1="588" y1="141" x2="600" y2="141" stroke="#9a7d0a" stroke-width="1"/>
+  <text x="414"  y="232" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#333">Full Gov</text>
+  <text x="474"  y="232" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#333">δ=0</text>
+  <text x="534"  y="232" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#333">remove_I</text>
+  <text x="594"  y="232" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#333">remove_C</text>
+  <text x="490" y="248" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#555">Removing any component raises violation rate above full governor</text>
+
+  <!-- ═══════════════ PANEL C ═══════════════ -->
+  <rect x="20" y="290" width="315" height="240" rx="8" fill="#fafafa" stroke="#ddd" stroke-width="1"/>
+  <text x="177" y="310" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#333">(C) Sensitivity Sweep Stability</text>
+  <text x="177" y="324" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#555">±30% weight variation</text>
+  <line x1="58" y1="338" x2="58" y2="488" stroke="#555" stroke-width="1"/>
+  <line x1="58" y1="488" x2="300" y2="488" stroke="#555" stroke-width="1"/>
+  <!-- left axis: success/violation 0–40 -->
+  <text x="374" y="338" font-family="sans-serif" font-size="7" fill="#888" text-anchor="middle">0.945</text>
+  <text x="54" y="342" text-anchor="end" font-family="monospace" font-size="8" fill="#555">40</text>
+  <text x="54" y="380" text-anchor="end" font-family="monospace" font-size="8" fill="#555">30</text>
+  <text x="54" y="415" text-anchor="end" font-family="monospace" font-size="8" fill="#555">20</text>
+  <text x="54" y="450" text-anchor="end" font-family="monospace" font-size="8" fill="#555">10</text>
+  <text x="54" y="490" text-anchor="end" font-family="monospace" font-size="8" fill="#555">0</text>
+  <!-- x axis: weight factors 0.7–1.3 -->
+  <text x="68"  y="500" text-anchor="middle" font-family="monospace" font-size="8" fill="#555">0.7</text>
+  <text x="108" y="500" text-anchor="middle" font-family="monospace" font-size="8" fill="#555">0.8</text>
+  <text x="148" y="500" text-anchor="middle" font-family="monospace" font-size="8" fill="#555">0.9</text>
+  <text x="188" y="500" text-anchor="middle" font-family="monospace" font-size="8" fill="#555">1.0</text>
+  <text x="228" y="500" text-anchor="middle" font-family="monospace" font-size="8" fill="#555">1.1</text>
+  <text x="268" y="500" text-anchor="middle" font-family="monospace" font-size="8" fill="#555">1.2</text>
+  <text x="300" y="500" text-anchor="middle" font-family="monospace" font-size="8" fill="#555">1.3</text>
+  <text x="177" y="512" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#555">Weight Factor</text>
+  <!-- gridlines -->
+  <line x1="56" y1="380" x2="300" y2="380" stroke="#eee" stroke-width="0.8"/>
+  <line x1="56" y1="415" x2="300" y2="415" stroke="#eee" stroke-width="0.8"/>
+  <line x1="56" y1="450" x2="300" y2="450" stroke="#eee" stroke-width="0.8"/>
+  <!-- nominal line -->
+  <line x1="188" y1="338" x2="188" y2="490" stroke="#bbb" stroke-width="1" stroke-dasharray="4 3"/>
+  <!-- success rate line (blue dots) — nearly flat ~40% -->
+  <polyline points="68,343 108,340 148,340 188,340 228,340 268,343 300,343" fill="none" stroke="#4472c4" stroke-width="1.5"/>
+  <circle cx="68"  cy="343" r="3" fill="#4472c4"/>
+  <circle cx="108" cy="340" r="3" fill="#4472c4"/>
+  <circle cx="148" cy="340" r="3" fill="#4472c4"/>
+  <circle cx="188" cy="340" r="3" fill="#4472c4"/>
+  <circle cx="228" cy="340" r="3" fill="#4472c4"/>
+  <circle cx="268" cy="343" r="3" fill="#4472c4"/>
+  <circle cx="300" cy="343" r="3" fill="#4472c4"/>
+  <!-- violation rate line (red squares) — flat ~5 -->
+  <polyline points="68,483 108,483 148,483 188,483 228,483 268,483 300,483" fill="none" stroke="#e74c3c" stroke-width="1.5"/>
+  <rect x="65"  y="480" width="6" height="6" fill="#e74c3c"/>
+  <rect x="105" y="480" width="6" height="6" fill="#e74c3c"/>
+  <rect x="145" y="480" width="6" height="6" fill="#e74c3c"/>
+  <rect x="185" y="480" width="6" height="6" fill="#e74c3c"/>
+  <rect x="225" y="480" width="6" height="6" fill="#e74c3c"/>
+  <rect x="265" y="480" width="6" height="6" fill="#e74c3c"/>
+  <rect x="297" y="480" width="6" height="6" fill="#e74c3c"/>
+  <!-- ΔΦ stability line (green triangles) — peaks at 1.0 -->
+  <polyline points="68,465 108,438 148,400 188,338 228,368 268,420 300,468" fill="none" stroke="#27ae60" stroke-width="1.5"/>
+  <polygon points="65,468 68,462 71,468" fill="#27ae60"/>
+  <polygon points="105,441 108,435 111,441" fill="#27ae60"/>
+  <polygon points="145,403 148,397 151,403" fill="#27ae60"/>
+  <polygon points="185,341 188,335 191,341" fill="#27ae60"/>
+  <polygon points="225,371 228,365 231,371" fill="#27ae60"/>
+  <polygon points="265,423 268,417 271,423" fill="#27ae60"/>
+  <polygon points="297,471 300,465 303,471" fill="#27ae60"/>
+  <!-- legend C -->
+  <rect x="62" y="516" width="8" height="8" fill="#4472c4" rx="4"/>
+  <text x="74" y="523" font-family="sans-serif" font-size="8" fill="#333">Success rate (%)</text>
+  <rect x="140" y="516" width="8" height="8" fill="#e74c3c"/>
+  <text x="152" y="523" font-family="sans-serif" font-size="8" fill="#333">Violation rate</text>
+  <polygon points="198,520 202,514 206,520" fill="#27ae60"/>
+  <text x="210" y="523" font-family="sans-serif" font-size="8" fill="#333">ΔΦ stability</text>
+
+  <!-- ═══════════════ PANEL D ═══════════════ -->
+  <rect x="345" y="290" width="315" height="240" rx="8" fill="#fafafa" stroke="#ddd" stroke-width="1"/>
+  <text x="502" y="310" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#333">(D) Real LLM vs Mock LLM</text>
+  <text x="502" y="324" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#555">STG works under non-deterministic LLM</text>
+  <line x1="378" y1="338" x2="378" y2="460" stroke="#555" stroke-width="1"/>
+  <line x1="378" y1="460" x2="635" y2="460" stroke="#555" stroke-width="1"/>
+  <!-- left axis: success % 0–60 -->
+  <text x="374" y="342" text-anchor="end" font-family="monospace" font-size="8" fill="#555">60</text>
+  <text x="374" y="380" text-anchor="end" font-family="monospace" font-size="8" fill="#555">40</text>
+  <text x="374" y="420" text-anchor="end" font-family="monospace" font-size="8" fill="#555">20</text>
+  <text x="374" y="462" text-anchor="end" font-family="monospace" font-size="8" fill="#555">0</text>
+  <line x1="376" y1="380" x2="635" y2="380" stroke="#eee" stroke-width="0.8"/>
+  <line x1="376" y1="420" x2="635" y2="420" stroke="#eee" stroke-width="0.8"/>
+  <!-- Mock LLM bars: success~41%, violation~5 -->
+  <!-- success bar (blue): 41/60 * 122 = 83px, top=460-83=377 -->
+  <rect x="400" y="377" width="45" height="83" fill="#4472c4"/>
+  <!-- violation bar (orange): 5/60*122=10px approx, right axis ~0-8 -->
+  <rect x="450" y="450" width="45" height="10" fill="#ed7d31"/>
+  <!-- Real LLM bars: success~39%, violation~5.2 -->
+  <rect x="530" y="380" width="45" height="80" fill="#4472c4"/>
+  <rect x="580" y="449" width="45" height="11" fill="#ed7d31"/>
+  <!-- right axis label -->
+  <text x="637" y="342" font-family="sans-serif" font-size="7" fill="#ed7d31" text-anchor="start">8</text>
+  <text x="637" y="462" font-family="sans-serif" font-size="7" fill="#ed7d31" text-anchor="start">0</text>
+  <text x="422" y="472" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#333">Mock LLM</text>
+  <text x="552" y="472" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#333">Real LLM</text>
+  <!-- legend D -->
+  <rect x="390" y="484" width="10" height="8" fill="#4472c4"/>
+  <text x="404" y="491" font-family="sans-serif" font-size="8" fill="#333">Success rate (%)</text>
+  <rect x="510" y="484" width="10" height="8" fill="#ed7d31"/>
+  <text x="524" y="491" font-family="sans-serif" font-size="8" fill="#333">Violation rate</text>
+  <text x="502" y="508" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#555">Governor performance consistent across mock and real LLM conditions</text>
+
+  <!-- Overall figure caption -->
+  <text x="340" y="530" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="700" fill="#333">Figure 2: Robustness summary of the Spiral-Time Governor (STG) across four experimental axes.</text>
+  <text x="340" y="544" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#555">(A) Violations ↓ while H_T unchanged in MuJoCo. (B) All ΔΦ components are necessary. (C) Stable under ±30% weight variation. (D) Works under real LLM.</text>
 </svg>
 
 Reproducible implementation: **https://github.com/dfeen87/stg-embodied-poc**
@@ -649,7 +831,7 @@ A **two-layer evaluation protocol** was established, consisting of a controlled 
   <text x="551" y="64" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#2e7d32">Synthetic testbed +</text>
   <text x="551" y="80" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#2e7d32">MuJoCo PoC</text>
   <text x="551" y="96" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#2e7d32">59% violation reduction</text>
-  <text x="340" y="122" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 9: The three pillars of the Spiral-Time Governor contribution.</text>
+  <text x="340" y="122" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Illustration I: The three pillars of the Spiral-Time Governor contribution.</text>
 </svg>
 
 ---
