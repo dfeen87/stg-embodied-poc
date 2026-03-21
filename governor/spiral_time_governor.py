@@ -170,15 +170,34 @@ class SpiralTimeGovernor:
         - ``"none"``           → full governor (default)
         - ``"no_delta"``       → δ=0 (torsion term disabled, Ablation A)
         - ``"always_execute"`` → bypass all gating (Ablation B / Baseline)
+    alpha : float, optional
+        Override for the ΔR weight α in ΔΦ.  Defaults to the module-level
+        ``ALPHA`` constant.
+    beta : float, optional
+        Override for the ΔI weight β in ΔΦ.  Defaults to ``BETA``.
+    gamma : float, optional
+        Override for the ΔC weight γ in ΔΦ.  Defaults to ``GAMMA``.
+    delta : float, optional
+        Override for the torsion weight δ in ΔΦ.  Defaults to ``DELTA``.
     """
 
-    def __init__(self, ablation: str = "none") -> None:
+    def __init__(
+        self,
+        ablation: str = "none",
+        alpha: float | None = None,
+        beta: float | None = None,
+        gamma: float | None = None,
+        delta: float | None = None,
+    ) -> None:
         """Initialise the governor.
 
         Parameters
         ----------
         ablation:
             One of ``"none"``, ``"no_delta"``, ``"always_execute"``.
+        alpha, beta, gamma, delta:
+            Optional per-instance overrides for the ΔΦ instability weights.
+            When ``None`` (default) the module-level constants are used.
         """
         if ablation not in ("none", "no_delta", "always_execute"):
             raise ValueError(
@@ -186,6 +205,10 @@ class SpiralTimeGovernor:
                 "Choose from: 'none', 'no_delta', 'always_execute'."
             )
         self.ablation = ablation
+        self._alpha: float = ALPHA if alpha is None else float(alpha)
+        self._beta: float = BETA if beta is None else float(beta)
+        self._gamma: float = GAMMA if gamma is None else float(gamma)
+        self._delta: float = DELTA if delta is None else float(delta)
         self._log: List[Dict] = []
         self._phi_prev: float = PHI0
         self._phi_history: List[float] = []
@@ -260,9 +283,9 @@ class SpiralTimeGovernor:
         chi = phi - self._phi_prev
 
         # Instability functional ΔΦ(t)
-        effective_delta = DELTA if self.ablation != "no_delta" else 0.0
+        effective_delta = self._delta if self.ablation != "no_delta" else 0.0
         delta_phi = float(np.clip(
-            ALPHA * delta_R + BETA * delta_I + GAMMA * delta_C + effective_delta * abs(chi),
+            self._alpha * delta_R + self._beta * delta_I + self._gamma * delta_C + effective_delta * abs(chi),
             0.0, 1.0,
         ))
 
