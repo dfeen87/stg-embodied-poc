@@ -177,16 +177,16 @@ After running `run_experiment.py`, the `results/` directory contains:
 
 ---
 
-## Known Limitations
+## Limitations
+
+### Practical / Engineering Limitations
 
 1. **Synthetic vs. physics:** The mock LLM agent produces deterministic sinusoidal actions and rule-based claims.  Real LLM integration would require an API call layer (not included in this PoC).
 2. **Oracle simplifications:** The `oracle()` method approximates terrain class from the torso x-position and contact count from geom-name matching.  A production system would use richer sensor fusion.
 3. **Task proxy:** The dm_control quadruped "escape" task is a physics-grounded but simplified proxy for the ANYmal-class terrain tasks in the paper.  Custom terrain assets, gait controllers, and task reward shaping are outside the scope of this PoC.
 4. **Single-process execution:** Episodes are run sequentially; wall-clock time scales linearly with `n_seeds × n_conditions × MAX_STEPS`.
 
----
-
-## Limitations
+### Scientific / Methodological Limitations
 
 The following limitations are disclosed in the interest of academic transparency and to support appropriate interpretation of the reported results.
 
