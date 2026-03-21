@@ -3,6 +3,8 @@
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 ![MuJoCo 3.x](https://img.shields.io/badge/MuJoCo-3.x-green)
 ![License MIT](https://img.shields.io/badge/license-MIT-lightgrey)
+[![CI](https://github.com/dfeen87/stg-embodied-poc/actions/workflows/ci.yml/badge.svg)](https://github.com/dfeen87/stg-embodied-poc/actions/workflows/ci.yml)
+
 
 **Minimal MuJoCo Proof-of-Concept for the Spiral-Time Governor (STG)**
 
