@@ -386,7 +386,8 @@ def plot_figure_8() -> None:
     ax_a.set_xticks(x_a)
     ax_a.set_xticklabels(panel_a_labels, fontsize=8)
     ax_a.set_title("(A) Violation Rate vs Hallucination Rate H_T\n"
-                   "(governor ↓ violations; H_T identical in MuJoCo)")
+                   "(governor reduces violations; H_T remains unchanged in\n"
+                   "physics-grounded MuJoCo validation)")
     handles = [bars_av, bars_ah]
     labels_leg = [h.get_label() for h in handles]
     ax_a.legend(handles, labels_leg, fontsize=7, loc="upper right")
@@ -484,7 +485,7 @@ def plot_figure_8() -> None:
         "All metrics use explicit units: success rate (%), violation rate (unsafe actions per episode), "
         "hallucination rate H_T (fraction), and ΔΦ stability (unitless index). "
         "The governor reduces unsafe actions without modifying the underlying LLM, "
-        "as confirmed by identical hallucination rates in MuJoCo.",
+        "as confirmed by unchanged hallucination rates in physics-grounded MuJoCo validation.",
         ha="center", va="bottom", fontsize=7.5, wrap=True,
         style="italic",
         bbox=dict(boxstyle="round,pad=0.3", facecolor="#f5f5f5", edgecolor="#cccccc",
