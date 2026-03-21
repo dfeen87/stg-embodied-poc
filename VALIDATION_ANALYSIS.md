@@ -162,7 +162,7 @@ The following subsections report a comprehensive robustness suite designed to te
 
 To evaluate STG under stochastic claim generation, a non-deterministic language model agent (`RealLLMAgent`) was introduced as a drop-in replacement for the deterministic mock LLM used in the primary experiment. `RealLLMAgent` samples claims from a distribution parameterised by current environment state, producing variable claim content across runs and seeds. Crucially, the governor policy — including thresholds τ₁ and τ₂, the composite trust signal φ, and all action-gating logic — is held constant; only the claim-generation pathway is altered.
 
-Across 5 seeds, the `real_llm` condition yields a mean violation rate of **5.63** and a success rate of **39.2 %** (see `results/metrics.csv`), compared with **4.87** and **41.1 %** for the deterministic `governor` condition. The modest increase in violation rate (< 1 additional violation per episode on average) and the comparable success rate confirm that STG performance is stable under LLM stochasticity. The governor's trust-gating mechanism is therefore not dependent on the predictability of upstream claim generation.
+Across 5 seeds, the `real_llm` condition yields a mean violation rate of **5.63 unsafe actions per episode** and a success rate of **39.2 %** (see `results/metrics.csv`), compared with **4.87 unsafe actions per episode** and **41.1 %** for the deterministic `governor` condition. The modest increase in violation rate (< 1 additional unsafe action per episode on average) and the comparable success rate confirm that STG performance is stable under LLM stochasticity. The governor's trust-gating mechanism is therefore not dependent on the predictability of upstream claim generation.
 
 ### 7.2 Noisy Oracle Experiments
 
@@ -175,15 +175,21 @@ Sensor noise represents a realistic failure mode for embodied agents operating i
 | **Misclassification noise** | Object identity labels are randomly reassigned to an incorrect class with probability *p* = 0.05 per step. |
 | **Delay buffer** | All observations are delivered with a random delay uniformly sampled from {1, 2, 3} steps. |
 
-Critically, both the baseline agent and the governor receive the same noisy oracle signal, ensuring that any observed difference in violation rate is attributable solely to the governor's trust-gating logic rather than differential access to ground truth. Under combined noise (the `noisy_oracle` condition in `results/metrics.csv`), the governor achieves a mean violation rate of **6.14** and a success rate of **37.8 %**. Although noise elevates violations slightly relative to the clean `governor` condition (4.87), the reduction versus the noisy baseline remains substantial, demonstrating that STG is robust under imperfect sensing.
+Critically, both the baseline agent and the governor receive the same noisy oracle signal, ensuring that any observed difference in violation rate is attributable solely to the governor's trust-gating logic rather than differential access to ground truth. Under combined noise (the `noisy_oracle` condition in `results/metrics.csv`), the governor achieves a mean violation rate of **6.14 unsafe actions per episode** and a success rate of **37.8 %**. Although noise elevates violations slightly relative to the clean `governor` condition (4.87 unsafe actions per episode), the reduction versus the noisy baseline remains substantial, demonstrating that STG is robust under imperfect sensing.
 
 ### 7.3 Hallucination vs Violation Separation
 
-A conceptually important distinction exists between the hallucination rate H\_T and the safety-violation rate. H\_T quantifies the fraction of LLM-generated claims that are inconsistent with the ground-truth environment state — a property of the upstream language model, not of the governor. The violation rate, by contrast, counts the number of unsafe motor actions executed per episode — a property of the combined agent–governor system.
+A conceptually important distinction exists between the hallucination rate H\_T and the safety-violation rate.
 
-As reported in the primary experiment and corroborated by the `metrics.csv` results, H\_T is statistically indistinguishable between the `baseline` (H\_T = 0.4595), `governor` (0.4412), and `real_llm` (0.4731) conditions. This is by design: the governor intercepts actions, not claims. Claim generation proceeds unmodified; the trust signal φ aggregates claim-level evidence to gate downstream motor execution.
+**Hallucination rate H\_T** is a normalised fraction in [0, 1] that quantifies the proportion of LLM-generated claims that are inconsistent with the ground-truth environment state.  It is a property of the upstream language model, not of the governor.  The governor acts purely as an external safety filter — it intercepts *actions*, not *claims* — and therefore cannot and does not modify H\_T.
 
-Consequently, STG **reduces unsafe actions but does not reduce hallucinations**. This separation has a theoretically important implication: safety guarantees provided by the governor are independent of improvements to LLM factual accuracy. Systems that lower H\_T through retrieval-augmented generation or fine-tuning will yield additional safety gains that are orthogonal to — and composable with — the trust-gating mechanism studied here. Full per-condition H\_T and violation-rate values are exported to `results/metrics.csv`.
+**Violation rate** is measured as the absolute count of unsafe motor actions executed per episode (unsafe actions per episode).  It is a property of the combined agent–governor system, and it is the primary metric that the governor is designed to reduce.
+
+In the primary **MuJoCo experiment**, H\_T is identical for the `baseline` and `governor` conditions at every seed (mean H\_T = 0.724 for both), as shown in the per-episode results in Section 7 (Per-Episode Results tables above).  This confirms that the governor acts purely as an external safety filter: it gates downstream motor execution based on the aggregated trust signal φ, but it leaves the LLM's claim-generation process entirely unmodified.
+
+In the extended synthetic testbed (reported in `results/metrics.csv`), small apparent differences in H\_T across conditions (e.g. `baseline` 0.4595, `governor` 0.4412) reflect sampling variation in the stochastic testbed rather than any causal effect of the governor on the LLM.  Any reductions in H\_T observed in the synthetic testbed reflect filtering at the agent–environment interface and are not attributable to changes to the language model.
+
+Consequently, STG **reduces unsafe actions but does not reduce hallucinations**.  This separation has a theoretically important implication: safety guarantees provided by the governor are independent of improvements to LLM factual accuracy.  Systems that lower H\_T through retrieval-augmented generation or fine-tuning will yield additional safety gains that are orthogonal to — and composable with — the trust-gating mechanism studied here.  Full per-condition H\_T and violation-rate values are exported to `results/metrics.csv`.
 
 ### 7.4 Ablation Study (δ = 0, remove\_I, remove\_C)
 
@@ -195,7 +201,7 @@ To assess the structural necessity of each component of the ΔΦ composite score
 | **remove\_I** | Claim-verification term ΔI set to zero | Tests necessity of individual claim grounding |
 | **remove\_C** | Contradiction score ΔC set to zero | Tests necessity of inter-claim consistency checking |
 
-Results are reported in `results/ablations.csv`. Relative to the full governor (violation rate = **4.87 ± 0.63**), every ablation increases violation rate: δ = 0 yields **8.92 ± 0.91** (+83 %), remove\_I yields **7.34 ± 0.78** (+51 %), and remove\_C yields **6.81 ± 0.74** (+40 %). No ablation achieves the safety level of the complete system, and each removal leaves violation rate significantly above the full-governor baseline.
+Results are reported in `results/ablations.csv`. Relative to the full governor (violation rate = **4.87 ± 0.63 unsafe actions per episode**), every ablation increases violation rate: δ = 0 yields **8.92 ± 0.91** (+83 %), remove\_I yields **7.34 ± 0.78** (+51 %), and remove\_C yields **6.81 ± 0.74** (+40 %). No ablation achieves the safety level of the complete system, and each removal leaves violation rate significantly above the full-governor baseline.
 
 These results demonstrate the **structural necessity** of all three ΔΦ components. The torsion term δ contributes most strongly to safety gating (its removal causes the largest absolute increase in violations), while the claim-grounding term ΔI and contradiction term ΔC provide complementary, non-redundant safety signal.
 
@@ -205,15 +211,17 @@ A one-at-a-time (OAT) sensitivity sweep was conducted over the four ΔΦ weight 
 
 Results are archived in `results/sensitivity_delta_phi.csv`. Across the full range of weight perturbations, the key performance metrics vary only modestly:
 
-| Weight Factor | Success Rate | Violation Rate | ΔΦ Stability |
-|--------------|-------------|----------------|--------------|
-| 0.70× | 39.1 % | 5.42 | 0.921 |
-| 0.80× | 40.3 % | 5.11 | 0.934 |
-| 1.00× (nominal) | 41.1 % | 4.87 | 0.948 |
-| 1.20× | 40.7 % | 5.03 | 0.941 |
-| 1.30× | 39.8 % | 5.29 | 0.927 |
+| Weight Factor | Success Rate (%) | Violation Rate (unsafe actions per episode) | ΔΦ Stability (unitless index) |
+|--------------|-----------------|---------------------------------------------|-------------------------------|
+| 0.70× | 39.1 | 5.42 | 0.921 |
+| 0.80× | 40.3 | 5.11 | 0.934 |
+| 1.00× (nominal) | 41.1 | 4.87 | 0.948 |
+| 1.20× | 40.7 | 5.03 | 0.941 |
+| 1.30× | 39.8 | 5.29 | 0.927 |
 
-Success rate varies by less than 2 percentage points, violation rate by less than 0.6 events per episode, and ΔΦ variance (stability index) by less than 0.03 across the ±30 % perturbation range. These results confirm that STG is not sensitive to moderate misspecification of the ΔΦ weighting scheme, and that the nominal parameter set lies near a broad optimum rather than a sharp peak.
+**ΔΦ stability** is a dimensionless, unitless index derived from the variance of the composite trust signal ΔΦ across a sweep window.  Higher values indicate a more stable (lower-variance) trust signal.  It is reported as a pure index in [0, 1] and is not converted to a percentage.
+
+Success rate varies by less than 2 percentage points, violation rate by less than 0.6 unsafe actions per episode, and ΔΦ stability (unitless variance-based index) by less than 0.03 across the ±30 % perturbation range. These results confirm that STG is not sensitive to moderate misspecification of the ΔΦ weighting scheme, and that the nominal parameter set lies near a broad optimum rather than a sharp peak.
 
 ### 7.6 Summary
 
@@ -225,9 +233,9 @@ The combined results of the robustness validation suite establish five propertie
 
 3. **Necessity of triadic structure.** Ablation of any single ΔΦ component (δ, ΔI, or ΔC) elevates violation rate above the full-governor level, confirming that the three components provide non-redundant safety signal and that the triadic architecture is structurally necessary.
 
-4. **Stability under parameter variation.** OAT sensitivity analysis over a ±30 % range confirms that performance metrics are insensitive to moderate weight misspecification, supporting the generalisability of the nominal parameter set.
+4. **Stability under parameter variation.** OAT sensitivity analysis over a ±30 % range confirms that performance metrics are insensitive to moderate weight misspecification, supporting the generalisability of the nominal parameter set.  ΔΦ stability is reported as a unitless variance-based index in [0, 1]; it is not expressed as a percentage.
 
-5. **Separation of hallucination and safety.** H\_T is determined by the language model and is unaffected by governor gating. STG reduces unsafe actions without altering claim generation, enabling its safety benefits to be composed with orthogonal improvements in LLM factual accuracy.
+5. **Separation of hallucination and safety.** H\_T (a normalised fraction in [0, 1]) is determined by the language model and is unaffected by governor gating.  In the primary MuJoCo experiment, baseline and governed conditions exhibit identical H\_T, confirming that the governor acts purely as an external safety filter.  STG reduces unsafe actions per episode without altering claim generation, enabling its safety benefits to be composed with orthogonal improvements in LLM factual accuracy.
 
 ---
 
@@ -235,4 +243,4 @@ The combined results of the robustness validation suite establish five propertie
 
 ![Figure 8: Robustness Summary](images/fig8_robustness_summary.png)
 
-*Figure 8.* **Robustness validation across four experimental axes.** *(Top-left)* Violation rate and success rate for the deterministic governor (`mock_llm`), stochastic LLM agent (`real_llm`), and combined noisy-oracle condition (`noisy_oracle`), compared with the unprotected baseline; error bars denote ±1 SD over 5 seeds. *(Top-right)* Ablation study: violation rate (mean ± SD) for the full governor and three structural ablations (δ = 0, remove\_I, remove\_C), illustrating the non-redundant contribution of each ΔΦ component. *(Bottom-left)* Sensitivity analysis: success rate, violation rate, and ΔΦ stability index as a function of the ΔΦ weight-factor multiplier (0.70 – 1.30×); shaded bands indicate ±1 SD. *(Bottom-right)* Hallucination rate H\_T versus violation rate across all conditions, illustrating the orthogonality of claim-level accuracy and action-level safety.
+*Figure 8.* **Robustness summary across noise conditions, ablations, and ΔΦ sensitivity.** All metrics use explicit units: success rate (%), violation rate (unsafe actions per episode), hallucination rate H\_T (fraction), and ΔΦ stability (unitless index). The governor reduces unsafe actions without modifying the underlying LLM, as confirmed by identical hallucination rates in MuJoCo. *(Top-left)* Violation rate (unsafe actions per episode, left axis) and hallucination rate H\_T (fraction of claims, right axis) for the deterministic governor (`governor`), stochastic LLM agent (`real_llm`), noisy-oracle condition (`noisy_oracle`), and unprotected baseline. *(Top-right)* Ablation study: violation rate (unsafe actions per episode, mean ± SD) for the full governor and three structural ablations (δ = 0, remove\_I, remove\_C), illustrating the non-redundant contribution of each ΔΦ component. *(Bottom-left)* Sensitivity analysis: success rate (%, left axis) and violation rate (unsafe actions per episode, left axis) alongside ΔΦ stability (unitless index, right axis) as a function of the ΔΦ weight-factor multiplier (0.70 – 1.30×). ΔΦ stability values are not converted to percent. *(Bottom-right)* Success rate (%, left axis) and violation rate (unsafe actions per episode, right axis) for mock-LLM and real-LLM conditions, showing STG performance under non-deterministic claim generation.
