@@ -65,6 +65,7 @@ This script reads the embedded simulation data and writes all eight figures (`fi
 ```
 stg-embodied-poc/
 ├── README.md
+├── LICENSE                     # MIT
 ├── PAPER.md                    # Companion paper (manuscript)
 ├── VALIDATION_ANALYSIS.md      # Detailed validation results and statistical analysis
 ├── CITATION.cff                # Citation metadata for the companion paper
