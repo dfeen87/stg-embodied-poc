@@ -156,7 +156,7 @@ Measured in-process (Python, N = 50 000 iterations, 3 claims per step).
 
 ## Robustness Validation (Figure 8)
 
-The following subsections report a comprehensive robustness suite designed to test the Semantic Trust Governor (STG) under conditions that exceed the idealised assumptions of the primary experiment. Five axes of variation are evaluated: (1) non-deterministic LLM claim generation, (2) imperfect oracle sensing, (3) structural ablation of the ΔΦ composite score, (4) one-at-a-time (OAT) sensitivity of ΔΦ weight parameters, and (5) the conceptual separation between hallucination rate and safety-violation rate. Results are summarised in Figure 8 and the underlying data are archived in `results/metrics.csv`, `results/ablations.csv`, and `results/sensitivity_delta_phi.csv`.
+The following subsections report a comprehensive robustness suite designed to test the Spiral-Time Governor (STG) under conditions that exceed the idealised assumptions of the primary experiment. Five axes of variation are evaluated: (1) non-deterministic LLM claim generation, (2) imperfect oracle sensing, (3) structural ablation of the ΔΦ composite score, (4) one-at-a-time (OAT) sensitivity of ΔΦ weight parameters, and (5) the conceptual separation between hallucination rate and safety-violation rate. Results are summarised in Figure 8 and the underlying data are archived in `results/metrics.csv`, `results/ablations.csv`, and `results/sensitivity_delta_phi.csv`.
 
 ### 7.1 Real LLM Condition
 

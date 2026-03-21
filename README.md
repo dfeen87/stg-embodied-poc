@@ -27,7 +27,7 @@ pip install -r requirements.txt
 # 2. Run the full pipeline (all conditions, seeds 0–9 except 5)
 bash scripts/run_all.sh
 
-# 3. Run a quick smoke test (2 seeds, 2 conditions)
+# 3. Run a quick smoke test (3 seeds, 2 conditions)
 python run_experiment.py --seeds 0 1 2 --conditions baseline governor
 
 # 4. Run with verbose per-step output
@@ -99,7 +99,7 @@ stg-embodied-poc/
 │   ├── fig7_performance_overhead.png
 │   └── fig8_robustness_summary.png
 ├── run_experiment.py           # Main experiment runner (CLI)
-├── run_sensitivity_sweep.py    # Sensitivity sweep over ΔΦ threshold (δ)
+├── run_sensitivity_sweep.py    # One-at-a-time sensitivity sweep over ΔΦ weights (α, β, γ, δ)
 ├── scripts/
 │   ├── run_all.sh              # Full pipeline (all conditions, seeds 0–9)
 │   └── run_robustness.sh       # Robustness check (governor, seeds 40–49)
@@ -112,7 +112,7 @@ stg-embodied-poc/
     ├── .gitkeep
     ├── ablations.csv           # Per-condition ablation results
     ├── metrics.csv             # Aggregated metrics across seeds/conditions
-    └── sensitivity_delta_phi.csv  # Sensitivity sweep results for ΔΦ threshold
+    └── sensitivity_delta_phi.csv  # Sensitivity sweep results for ΔΦ weights
 ```
 
 ---
@@ -163,6 +163,7 @@ stg-embodied-poc/
 | `--n_claims`   | `3`               | LLM claims per step |
 | `--output_dir` | `results/`        | Output directory |
 | `--verbose`    | `False`           | Verbose per-step logging |
+| `--use-real-llm` | `False`         | Use `RealLLMAgent` (real OpenAI API) instead of `MockLLMAgent`; requires `OPENAI_API_KEY` |
 
 ---
 
@@ -174,6 +175,8 @@ After running `run_experiment.py`, the `results/` directory contains:
 |------|-------------|
 | `results.json` | Flat per-episode metrics (H_T, violations, success, n_steps) for all conditions/seeds |
 | `summary.csv`  | One row per episode with all computed metrics (written by `compute_metrics.py`) |
+| `metrics.csv`  | Per-condition H_T, violation_rate and success_rate (three primary metrics) |
+| `ablations.csv` | Per-episode ablation comparison (governor vs δ=0, remove_I, remove_C) |
 | `<condition>_steps.csv` | Per-step logs for each condition (phi, delta_phi, mode, reward, oracle, …) |
 
 ---

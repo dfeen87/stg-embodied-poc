@@ -5,8 +5,9 @@
 #   bash scripts/run_all.sh
 #
 # Steps:
-#   1. Run all four conditions (baseline, governor, ablation_a, rag) with
-#      seeds 0–9 (excluding seed 5, which is reserved for robustness checks).
+#   1. Run all conditions (baseline, governor, ablation_a, ablation_remove_I,
+#      ablation_remove_C, rag) with seeds 0–4, 6–9.
+#      Robustness checks use out-of-distribution seeds 40–49 (see run_robustness.sh).
 #   2. Compute and display summary metrics from the saved results.
 
 set -euo pipefail
