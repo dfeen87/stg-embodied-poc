@@ -36,6 +36,9 @@ results/*.csv
 results/*.json
 results/*.png
 results/*.pdf
+!results/metrics.csv
+!results/ablations.csv
+!results/sensitivity_delta_phi.csv
 
 # Jupyter
 .ipynb_checkpoints/

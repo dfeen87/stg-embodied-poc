@@ -1,0 +1,6 @@
+condition,violation_rate,H_T,success_rate
+baseline,13.24,0.4595,34.4
+governor,4.87,0.4412,41.1
+real_llm,5.63,0.4731,39.2
+noisy_oracle,6.14,0.4598,37.8
+mock_llm,4.87,0.4412,41.1
