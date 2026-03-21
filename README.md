@@ -42,6 +42,22 @@ Results are written to `results/` as CSV and JSON files (see [Output Files](#out
 
 ---
 
+## Full Reproducibility (One Command)
+
+**Environment:** Python 3.10+, MuJoCo 3.x (see `requirements.txt` for full dependencies).
+
+All random seeds are fixed in [`config.py`](config.py) (`DEFAULT_SEEDS = list(range(10))`, `BOOTSTRAP_SEED = 77`).
+
+To regenerate **all figures** used in the paper:
+
+```bash
+python images/generate_plots.py
+```
+
+This script reads the embedded simulation data and writes all eight figures (`fig1_*.png` – `fig8_*.png`) to the `images/` directory.
+
+---
+
 ## Directory Structure
 
 ```
