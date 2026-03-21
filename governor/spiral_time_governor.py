@@ -11,6 +11,24 @@ Mathematical specification (from paper):
   χ(t) = φ(t) − φ(t−1)                torsion (rate of coherence change)
   φ(t) = clamp(1 − (wR·ΔR + wI·ΔI + wC·ΔC), 0, 1)   coherence score
   ΔΦ(t) = clamp(α·ΔR + β·ΔI + γ·ΔC + δ·|χ(t)|, 0, 1) instability functional
+
+Design note — what STG does and does not reduce
+------------------------------------------------
+STG is designed to reduce *unsafe actions* (constraint violations) by gating
+the LLM's proposed action whenever ΔΦ(t) exceeds a threshold.  It does NOT
+suppress or reduce the LLM's hallucination rate H_T; hallucinations (false
+claims about the world state) still occur at the same rate regardless of which
+ablation is active.  The key distinction is:
+
+  H_T   — fraction of LLM claims that fail oracle verification (hallucination
+           rate).  STG does not change this; it is a property of the LLM.
+  V_T   — fraction of steps on which an unsafe proposed action reaches the
+           actuators (violation rate).  STG *does* reduce this by switching to
+           SAFE mode and issuing a zero-torque fallback action.
+
+Metric separation keeps the evaluation honest: improvements in V_T reflect
+the governor's safety gating, while H_T remains an independent measure of
+LLM grounding quality.
 """
 
 from __future__ import annotations
