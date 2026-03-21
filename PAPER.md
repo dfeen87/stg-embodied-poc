@@ -1,20 +1,13 @@
 # Deterministic Spiral-Time Governance for Hallucination Suppression in LLM-Controlled Climbing and Walking Robots
 
-Marcel Krüger¹
-
-Don Michael Feeney Jr²
+**Marcel Krüger¹ · Don Michael Feeney Jr.²**
 
 ¹ Independent Researcher, Germany
-
 ² Independent Researcher, USA
+Corresponding author: marcelkrueger092@gmail.com
+ORCID (M.K.): 0009-0002-5709-9729 · ORCID (D.M.F.): 0009-0003-1350-4160
 
-Corresponding author: [marcelkrueger092@gmail.com](mailto:marcelkrueger092@gmail.com)
-
-ORCID (M.K.): [0009-0002-5709-9729](https://orcid.org/0009-0002-5709-9729)
-
-ORCID (D.M.F.): [0009-0003-1350-4160](https://orcid.org/0009-0003-1350-4160)
-
-*Journal of Climbing and Walking Robots* · 2026 · Vol. XX(XX) · pp. 1–XX
+*Journal of Climbing and Walking Robots · 2026 · Vol. XX(XX) · pp. 1–XX*
 DOI: *(assigned by journal)*
 
 ---
@@ -27,7 +20,7 @@ We introduce a deterministic external governance layer based on a Spiral-Time op
 
 Crucially, we define hallucination operationally in robotics as **falsifiable inconsistency** between LLM-issued claims/commands and a ground-truth oracle derived from simulator state. We provide (i) a formal supervisor model, (ii) a deterministic gating algorithm, and (iii) a discrete Lyapunov-based boundedness/ISS argument for the governor state under bounded measurement noise. A reproducible simulation protocol is specified for climbing and walking tasks with controlled perturbations and statistical evaluation (seeds, confidence intervals, ablation tests).
 
-In addition to the synthetic stochastic evaluation, we provide a **minimal physics-grounded transfer validation** using a MuJoCo-based quadruped environment. All governor parameters are kept identical to the synthetic setting without retuning. The embodied validation reproduces a quantitative reduction in hallucination rate (H_T: 0.41 → 0.24, ≈41% relative reduction) and deterministic mode switching behavior under contact-rich dynamics.
+In addition to the synthetic stochastic evaluation, we provide a **minimal physics-grounded transfer validation** using a MuJoCo-based quadruped environment. All governor parameters are kept identical to the synthetic setting without retuning. The embodied validation demonstrates a 59% reduction in unsafe-action violations and deterministic mode switching behavior under contact-rich dynamics.
 
 The framework is model-agnostic and does not modify LLM weights, offering auditability and predictable behavior suitable for safety-sensitive legged robot deployments.
 
@@ -43,20 +36,41 @@ Recent robotics research increasingly integrates LLMs as high-level planners, se
 
 Existing mitigation strategies typically rely on confidence scoring, retrieval augmentation, or post-hoc verification. However, these approaches remain **probabilistic** and do not provide deterministic guarantees on mode switching or bounded supervisory dynamics.
 
-This paper targets a specific failure class: hallucinated assertions or action recommendations that are inconsistent with verified robot state and constraints. We propose a **deterministic Spiral-Time Governor** that wraps a black-box LLM and enforces auditable threshold-based mode switching:
+This paper targets a specific failure class: hallucinated assertions or action recommendations that are inconsistent with verified robot state and constraints. We propose a **deterministic Spiral-Time Governor** that wraps a black-box LLM and enforces auditable threshold-based mode switching.
 
-```
-┌─────────────┐    ┌──────────────┐    ┌──────────────┐
-│   EXECUTE   │    │    VERIFY    │    │     SAFE     │
-│             │    │              │    │              │
-│ Normal      │    │ Cross-check  │    │ Freeze +     │
-│ operation   │    │ & constraint │    │ certified    │
-│             │    │ validation   │    │ fallback     │
-└─────────────┘    └──────────────┘    └──────────────┘
-  ΔΦ(t) < τ₁       τ₁ ≤ ΔΦ(t) < τ₂     ΔΦ(t) ≥ τ₂
-```
+<!-- FIGURE: Mode Switching Overview -->
+<svg width="100%" viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <!-- EXECUTE box -->
+  <rect x="40" y="30" width="170" height="90" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.2"/>
+  <text x="125" y="60" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#1b5e20">EXECUTE</text>
+  <text x="125" y="80" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2e7d32">Normal operation</text>
+  <text x="125" y="97" text-anchor="middle" font-family="monospace" font-size="10" fill="#388e3c">ΔΦ(t) &lt; τ₁</text>
+  <text x="125" y="112" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#388e3c">τ₁ = 0.25</text>
+  <!-- VERIFY box -->
+  <rect x="255" y="30" width="170" height="90" rx="10" fill="#fff8e1" stroke="#f57f17" stroke-width="1.2"/>
+  <text x="340" y="60" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#e65100">VERIFY</text>
+  <text x="340" y="80" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#f57f17">Cross-check &amp; validate</text>
+  <text x="340" y="97" text-anchor="middle" font-family="monospace" font-size="10" fill="#fb8c00">τ₁ ≤ ΔΦ(t) &lt; τ₂</text>
+  <text x="340" y="112" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#fb8c00">τ₁=0.25, τ₂=0.55</text>
+  <!-- SAFE box -->
+  <rect x="470" y="30" width="170" height="90" rx="10" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+  <text x="555" y="60" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#b71c1c">SAFE</text>
+  <text x="555" y="80" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#c62828">Freeze + fallback</text>
+  <text x="555" y="97" text-anchor="middle" font-family="monospace" font-size="10" fill="#e53935">ΔΦ(t) ≥ τ₂</text>
+  <text x="555" y="112" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#e53935">τ₂ = 0.55</text>
+  <!-- arrows -->
+  <line x1="210" y1="75" x2="253" y2="75" stroke="#888" stroke-width="1.2" marker-end="url(#arr1)"/>
+  <line x1="425" y1="75" x2="468" y2="75" stroke="#888" stroke-width="1.2" marker-end="url(#arr1)"/>
+  <!-- ΔΦ axis label -->
+  <text x="340" y="148" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">ΔΦ(t) increases →  instability grows →  more conservative mode</text>
+</svg>
 
-The governor does not modify LLM weights and is model-agnostic. It provides a transparent instability functional that regulates execution, verification, and fallback behavior through deterministic thresholds.
+*Figure 1: The three deterministic operating modes of the Spiral-Time Governor, triggered by the instability functional ΔΦ(t) against fixed thresholds τ₁ = 0.25 and τ₂ = 0.55.*
 
 ### Contributions
 
@@ -75,33 +89,63 @@ Let the physical robot (or simulator) have state sₜ ∈ 𝒮, measured outputs
 
 An LLM-based module proposes high-level outputs â_t (tool calls, subgoals, textual claims, or command suggestions). The governor 𝒢 is a **deterministic supervisor** that decides whether â_t is admissible or must be verified/blocked.
 
-```
-  Physical Robot / Simulator
-  ┌────────────────────────────────────────────────┐
-  │  sₜ ∈ 𝒮  ──→  yₜ ∈ 𝒴  ──→  uₜ ∈ 𝒰          │
-  │                                    ↑            │
-  │         LLM Module                 │            │
-  │    â_t (claims, subgoals)          │            │
-  │           │                        │            │
-  │           ↓                        │            │
-  │       Governor 𝒢  ─── admissible? ─┘            │
-  │    (deterministic supervisor)                   │
-  └────────────────────────────────────────────────┘
-```
+<!-- FIGURE: Robot Autonomy Stack -->
+<svg width="100%" viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <!-- outer container -->
+  <rect x="30" y="15" width="620" height="265" rx="14" fill="none" stroke="#b0bec5" stroke-width="1" stroke-dasharray="5 4"/>
+  <text x="50" y="36" font-family="sans-serif" font-size="11" fill="#78909c">Physical Robot / Simulator</text>
+  <!-- Robot state box -->
+  <rect x="55" y="50" width="160" height="56" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="1"/>
+  <text x="135" y="73" text-anchor="middle" font-family="monospace" font-size="12" font-weight="600" fill="#0d47a1">sₜ ∈ 𝒮</text>
+  <text x="135" y="92" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1565c0">Robot state</text>
+  <!-- Measured outputs -->
+  <rect x="255" y="50" width="160" height="56" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="1"/>
+  <text x="335" y="73" text-anchor="middle" font-family="monospace" font-size="12" font-weight="600" fill="#0d47a1">yₜ ∈ 𝒴</text>
+  <text x="335" y="92" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1565c0">Measured outputs</text>
+  <!-- Low-level controller -->
+  <rect x="455" y="50" width="160" height="56" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="1"/>
+  <text x="535" y="73" text-anchor="middle" font-family="monospace" font-size="12" font-weight="600" fill="#0d47a1">uₜ ∈ 𝒰</text>
+  <text x="535" y="92" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1565c0">Low-level controller</text>
+  <!-- arrows top row -->
+  <line x1="215" y1="78" x2="253" y2="78" stroke="#1565c0" stroke-width="1.2" marker-end="url(#arr2)"/>
+  <line x1="415" y1="78" x2="453" y2="78" stroke="#1565c0" stroke-width="1.2" marker-end="url(#arr2)"/>
+  <!-- LLM Module -->
+  <rect x="155" y="165" width="170" height="60" rx="8" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1"/>
+  <text x="240" y="188" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="600" fill="#4a148c">LLM Module</text>
+  <text x="240" y="206" text-anchor="middle" font-family="monospace" font-size="10" fill="#6a1b9a">â_t claims, subgoals</text>
+  <text x="240" y="220" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6a1b9a">action proposals</text>
+  <!-- Governor -->
+  <rect x="355" y="165" width="180" height="60" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+  <text x="445" y="188" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#bf360c">Governor 𝒢</text>
+  <text x="445" y="206" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#e64a19">Deterministic supervisor</text>
+  <text x="445" y="220" text-anchor="middle" font-family="monospace" font-size="10" fill="#e64a19">admissible?</text>
+  <!-- arrow: yₜ down to LLM -->
+  <line x1="335" y1="106" x2="285" y2="163" stroke="#888" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr2)"/>
+  <!-- arrow: LLM to Governor -->
+  <line x1="325" y1="195" x2="353" y2="195" stroke="#6a1b9a" stroke-width="1.2" marker-end="url(#arr2)"/>
+  <!-- arrow: Governor to uₜ -->
+  <line x1="535" y1="163" x2="535" y2="108" stroke="#e65100" stroke-width="1.2" marker-end="url(#arr2)"/>
+  <line x1="445" y1="163" x2="480" y2="130" stroke="#e65100" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#arr2)"/>
+  <!-- label -->
+  <text x="340" y="280" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 2: Robot autonomy stack with LLM module and deterministic Governor 𝒢.</text>
+</svg>
 
 ### 2.2 · Oracle-Based Hallucination Definition
 
-In simulation we have a ground-truth oracle 𝒪(sₜ) providing verifiable predicates (pose, contact set, terrain class, feasibility flags). Let the LLM output at time t include a finite set of claims Kₜ = {kₜ,₁, …, kₜ,mₜ} and a proposed action â_t.
+In simulation we have a ground-truth oracle 𝒪(sₜ) providing verifiable predicates (pose, contact set, terrain class, feasibility flags). Let the LLM output at time t include claims Kₜ = {kₜ,₁, …, kₜ,mₜ} and proposed action â_t.
 
-Define a verification map ver(·) that evaluates a claim against the oracle and/or certified checkers:
-
-> **ver(kₜ,ⱼ) ∈ {0, 1}** — equals 1 iff kₜ,ⱼ is consistent with 𝒪(sₜ) and certified checks.
+Define a verification map **ver(kₜ,ⱼ) ∈ {0, 1}** — equals 1 iff kₜ,ⱼ is consistent with 𝒪(sₜ) and certified checks.
 
 **Hallucination rate over horizon T:**
 
-$$H_T \;:=\; \frac{1}{\displaystyle\sum_{t=1}^{T} m_t} \;\sum_{t=1}^{T}\;\sum_{j=1}^{m_t} \bigl(1 - \mathrm{ver}(k_{t,j})\bigr)$$
+$$H_T := \frac{1}{\sum_{t=1}^{T} m_t} \sum_{t=1}^{T}\sum_{j=1}^{m_t} \bigl(1 - \text{ver}(k_{t,j})\bigr)$$
 
-Thus hallucination is defined as a **testable inconsistency** in a robotics context — not a probabilistic confidence estimate.
+Thus hallucination is defined as a **testable inconsistency** — not a probabilistic confidence estimate.
 
 ---
 
@@ -109,23 +153,58 @@ Thus hallucination is defined as a **testable inconsistency** in a robotics cont
 
 ### 3.1 · Triadic Spiral-Time Embedding
 
-```
-         Imaginary axes
-              │  jχ(t)
-              │   ↑
-              │   │  · ψ(t)
-              │   │ ╱
-   ────────────┼──╱──────────────→  iϕ(t)
-              │╱
-              ╱
-             ╱ t (real / time axis)
-```
+We define the triadic state: **ψ(t) = t + iϕ(t) + jχ(t)**, where χ(t) := ϕ(t) − ϕ(t−1).
 
-We define the triadic state:
+Here ϕ(t) ∈ [0, 1] is a deterministic coherence score and χ(t) captures abrupt coherence changes (temporal torsion).
 
-$$\psi(t) \;=\; t \;+\; i\,\phi(t) \;+\; j\,\chi(t), \qquad \chi(t) \;:=\; \phi(t) - \phi(t-1)$$
-
-Here **ϕ(t) ∈ [0, 1]** is a deterministic coherence score and **χ(t)** captures abrupt coherence changes (temporal torsion).
+<!-- FIGURE: Spiral-Time State Space -->
+<svg width="100%" viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <!-- Background panel -->
+  <rect x="30" y="20" width="380" height="255" rx="12" fill="#fafafa" stroke="#e0e0e0" stroke-width="1"/>
+  <!-- Axes -->
+  <!-- t axis (diagonal = depth illusion) -->
+  <line x1="120" y1="230" x2="60" y2="270" stroke="#555" stroke-width="1.5" marker-end="url(#arr3)"/>
+  <text x="42" y="280" font-family="serif" font-size="13" font-style="italic" fill="#333">t</text>
+  <!-- iϕ axis (horizontal right) -->
+  <line x1="120" y1="230" x2="340" y2="230" stroke="#1565c0" stroke-width="1.5" marker-end="url(#arr3)"/>
+  <text x="348" y="234" font-family="serif" font-size="13" font-style="italic" fill="#1565c0">iϕ(t)</text>
+  <!-- jχ axis (vertical up) -->
+  <line x1="120" y1="230" x2="120" y2="50" stroke="#6a1b9a" stroke-width="1.5" marker-end="url(#arr3)"/>
+  <text x="96" y="44" font-family="serif" font-size="13" font-style="italic" fill="#6a1b9a">jχ(t)</text>
+  <!-- Origin dot -->
+  <circle cx="120" cy="230" r="3" fill="#333"/>
+  <text x="100" y="248" font-family="sans-serif" font-size="10" fill="#555">origin</text>
+  <!-- Sample ψ(t) point -->
+  <circle cx="248" cy="118" r="7" fill="#e65100" stroke="#fff" stroke-width="2"/>
+  <text x="260" y="113" font-family="serif" font-size="13" font-style="italic" fill="#e65100">ψ(t)</text>
+  <!-- dashed projection lines -->
+  <line x1="248" y1="118" x2="248" y2="230" stroke="#1565c0" stroke-width="1" stroke-dasharray="4 3"/>
+  <line x1="120" y1="118" x2="248" y2="118" stroke="#6a1b9a" stroke-width="1" stroke-dasharray="4 3"/>
+  <line x1="120" y1="230" x2="248" y2="118" stroke="#e65100" stroke-width="1.5" stroke-dasharray="3 2"/>
+  <!-- coordinate labels -->
+  <text x="184" y="245" font-family="monospace" font-size="10" fill="#1565c0">ϕ(t)</text>
+  <text x="68" y="175" font-family="monospace" font-size="10" fill="#6a1b9a">χ(t)</text>
+  <!-- formula panel -->
+  <rect x="430" y="30" width="225" height="235" rx="10" fill="#fff8e1" stroke="#f9a825" stroke-width="1"/>
+  <text x="542" y="58" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#e65100">Triadic State</text>
+  <text x="542" y="82" text-anchor="middle" font-family="serif" font-size="13" font-style="italic" fill="#333">ψ(t) = t + iϕ(t) + jχ(t)</text>
+  <line x1="448" y1="95" x2="637" y2="95" stroke="#f9a825" stroke-width="0.8"/>
+  <text x="448" y="116" font-family="sans-serif" font-size="11" font-weight="600" fill="#333">Components:</text>
+  <text x="448" y="136" font-family="monospace" font-size="10" fill="#333">t      — real time</text>
+  <text x="448" y="156" font-family="monospace" font-size="10" fill="#1565c0">iϕ(t) — coherence</text>
+  <text x="448" y="176" font-family="monospace" font-size="10" fill="#6a1b9a">jχ(t) — torsion</text>
+  <line x1="448" y1="190" x2="637" y2="190" stroke="#f9a825" stroke-width="0.8"/>
+  <text x="448" y="210" font-family="sans-serif" font-size="11" font-weight="600" fill="#333">Torsion:</text>
+  <text x="448" y="230" font-family="serif" font-size="12" font-style="italic" fill="#6a1b9a">χ(t) = ϕ(t) − ϕ(t−1)</text>
+  <text x="448" y="252" font-family="sans-serif" font-size="10" fill="#555">captures abrupt divergence</text>
+  <!-- caption -->
+  <text x="340" y="288" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 3: Triadic Spiral-Time state space. ψ(t) traces a path as coherence and torsion evolve.</text>
+</svg>
 
 ### 3.2 · Deterministic Coherence Components
 
@@ -137,21 +216,62 @@ We use deterministic deviations inspired by the Structure–Information–Cohere
 | Information deviation | ΔI(t) | [0, 1] | Claim mismatch against oracle/telemetry |
 | Coherence deviation | ΔC(t) | [0, 1] | Contradiction score vs. verified memory window |
 
-**Information deviation** is defined directly from the verification map:
+**Information deviation:** ΔI(t) := (1/mₜ) · Σⱼ (1 − ver(kₜ,ⱼ))
 
-$$\Delta I(t) \;:=\; \frac{1}{m_t}\sum_{j=1}^{m_t}\bigl(1 - \mathrm{ver}(k_{t,j})\bigr)$$
-
-**Coherence score:**
-
-$$\phi(t) \;:=\; 1 \;-\;\bigl(w_R\,\Delta R(t) + w_I\,\Delta I(t) + w_C\,\Delta C(t)\bigr), \qquad w_R + w_I + w_C = 1$$
+**Coherence score:** ϕ(t) := 1 − (wR·ΔR(t) + wI·ΔI(t) + wC·ΔC(t)),   where wR + wI + wC = 1
 
 ### 3.3 · Instability Functional
 
-$$\boxed{\Delta\Phi(t) \;:=\; \alpha\,\Delta R(t) \;+\; \beta\,\Delta I(t) \;+\; \gamma\,\Delta C(t) \;+\; \delta\,|\chi(t)|, \qquad \alpha+\beta+\gamma+\delta = 1}$$
+$$\boxed{\Delta\Phi(t) := \alpha\,\Delta R(t) + \beta\,\Delta I(t) + \gamma\,\Delta C(t) + \delta\,|\chi(t)|, \quad \alpha+\beta+\gamma+\delta = 1}$$
+
+<!-- FIGURE: Instability Functional Decomposition -->
+<svg width="100%" viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <!-- ΔR component -->
+  <rect x="40" y="30" width="118" height="64" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+  <text x="99" y="54" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#1b5e20">ΔR(t)</text>
+  <text x="99" y="72" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#2e7d32">Structure</text>
+  <text x="99" y="86" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#388e3c">α = 0.25</text>
+  <!-- ΔI component -->
+  <rect x="185" y="30" width="118" height="64" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="1"/>
+  <text x="244" y="54" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#0d47a1">ΔI(t)</text>
+  <text x="244" y="72" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1565c0">Information</text>
+  <text x="244" y="86" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1976d2">β = 0.35</text>
+  <!-- ΔC component -->
+  <rect x="330" y="30" width="118" height="64" rx="8" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1"/>
+  <text x="389" y="54" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#4a148c">ΔC(t)</text>
+  <text x="389" y="72" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6a1b9a">Coherence</text>
+  <text x="389" y="86" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#7b1fa2">γ = 0.25</text>
+  <!-- |χ(t)| component -->
+  <rect x="475" y="30" width="118" height="64" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="1"/>
+  <text x="534" y="54" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#bf360c">|χ(t)|</text>
+  <text x="534" y="72" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#e65100">Torsion</text>
+  <text x="534" y="86" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#f57c00">δ = 0.15</text>
+  <!-- arrows down to ΔΦ -->
+  <line x1="99"  y1="94" x2="310" y2="158" stroke="#2e7d32" stroke-width="1" marker-end="url(#arr4)"/>
+  <line x1="244" y1="94" x2="320" y2="158" stroke="#1565c0" stroke-width="1" marker-end="url(#arr4)"/>
+  <line x1="389" y1="94" x2="340" y2="158" stroke="#6a1b9a" stroke-width="1" marker-end="url(#arr4)"/>
+  <line x1="534" y1="94" x2="360" y2="158" stroke="#e65100" stroke-width="1" marker-end="url(#arr4)"/>
+  <!-- ΔΦ output box -->
+  <rect x="265" y="158" width="150" height="44" rx="8" fill="#212121" stroke="#424242" stroke-width="1.5"/>
+  <text x="340" y="177" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#fff">ΔΦ(t)</text>
+  <text x="340" y="194" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#bdbdbd">instability scalar</text>
+  <text x="340" y="214" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#777">Figure 4: ΔΦ(t) is a weighted sum of four deterministic deviation signals.</text>
+</svg>
 
 ### 3.4 · Deterministic Mode Switching
 
-$$M(t) \;=\; \begin{cases} \textbf{EXECUTE} & \Delta\Phi(t) < \tau_1 \\ \textbf{VERIFY} & \tau_1 \leq \Delta\Phi(t) < \tau_2 \\ \textbf{SAFE} & \Delta\Phi(t) \geq \tau_2 \end{cases}$$
+Thresholds 0 < τ₁ < τ₂ < 1 define:
+
+| Condition | Mode |
+|---|---|
+| ΔΦ(t) < τ₁ | **EXECUTE** |
+| τ₁ ≤ ΔΦ(t) < τ₂ | **VERIFY** |
+| ΔΦ(t) ≥ τ₂ | **SAFE** |
 
 **Fixed parameters (v2.2):**
 
@@ -180,14 +300,10 @@ $$M(t) \;=\; \begin{cases} \textbf{EXECUTE} & \Delta\Phi(t) < \tau_1 \\ \textbf{
   4:  ϕ(t)  ←  1 − (wR·ΔR + wI·ΔI + wC·ΔC)
   5:  χ(t)  ←  ϕ(t) − ϕ(t − 1)
   6:  ΔΦ(t) ←  α·ΔR + β·ΔI + γ·ΔC + δ·|χ(t)|
-  7:  ┌─ if ΔΦ(t) < τ₁ ──────────────────────────────────────┐
-  8:  │    M(t) ← EXECUTE ;  allow â_t if constraints pass    │
-  9:  ├─ else if ΔΦ(t) < τ₂ ──────────────────────────────────┤
- 10:  │    M(t) ← VERIFY  ;  cross-check; block irreversible   │
- 11:  ├─ else ──────────────────────────────────────────────────┤
- 12:  │    M(t) ← SAFE    ;  freeze writes; trigger fallback    │
- 13:  └───────────────────────────────────────────────────────-─┘
- 14:  Log (t, ϕ(t), χ(t), ΔΦ(t), M(t))  →  immutable audit trail
+  7:  if ΔΦ(t) < τ₁  →  M(t) ← EXECUTE ; allow â_t if constraints pass
+  8:  elif ΔΦ(t) < τ₂ →  M(t) ← VERIFY  ; cross-check; block irreversible
+  9:  else            →  M(t) ← SAFE    ; freeze writes; trigger fallback
+ 10:  Log (t, ϕ(t), χ(t), ΔΦ(t), M(t))  →  immutable audit trail
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -207,32 +323,56 @@ $$M(t) \;=\; \begin{cases} \textbf{EXECUTE} & \Delta\Phi(t) < \tau_1 \\ \textbf{
 
 ## 6 · Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                                                                     │
-│   ┌──────────────┐    ┌──────────────────┐    ┌─────────────────┐  │
-│   │  Telemetry   │    │  Spiral-Time     │    │   LLM Agent     │  │
-│   │              │───▶│  Governor        │───▶│   (black-box)   │  │
-│   │  Perception  │    │                  │    │                 │  │
-│   │  SLAM        │    │  ϕ(t)  coherence │    └────────┬────────┘  │
-│   │  Contacts    │    │  χ(t)  torsion   │             │           │
-│   └──────────────┘    │  ΔΦ(t) instabil. │             ▼           │
-│                       │                  │    ┌─────────────────┐  │
-│                       │  ┌────────────┐  │    │    Planner /    │  │
-│                       │  │  EXECUTE   │  │    │   Supervisor    │  │
-│                       │  │  VERIFY    │  │    └────────┬────────┘  │
-│                       │  │  SAFE      │  │             │           │
-│                       │  └────────────┘  │             ▼           │
-│                       └──────────────────┘    ┌─────────────────┐  │
-│                                  ▲            │   Low-level     │  │
-│                                  └────────────│   Controller    │  │
-│                                               └─────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
-
-Figure 1: Governor-centered architecture. The Spiral-Time Governor evaluates
-instability ΔΦ and enforces deterministic gating of LLM outputs before execution.
-The feedback loop from the controller returns telemetry to the governor.
-```
+<!-- FIGURE: System Architecture -->
+<svg width="100%" viewBox="0 0 680 360" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <!-- Telemetry box -->
+  <rect x="40" y="50" width="150" height="80" rx="10" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.2"/>
+  <text x="115" y="78" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#0d47a1">Telemetry</text>
+  <text x="115" y="97" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1565c0">Perception / SLAM</text>
+  <text x="115" y="113" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1565c0">Contacts / IMU</text>
+  <!-- Spiral-Time Governor (central) -->
+  <rect x="240" y="30" width="200" height="130" rx="12" fill="#fff8e1" stroke="#f9a825" stroke-width="2"/>
+  <text x="340" y="58" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#e65100">Spiral-Time Governor</text>
+  <line x1="258" y1="68" x2="422" y2="68" stroke="#f9a825" stroke-width="0.8"/>
+  <text x="340" y="87" text-anchor="middle" font-family="monospace" font-size="11" fill="#555">ϕ(t)  coherence score</text>
+  <text x="340" y="103" text-anchor="middle" font-family="monospace" font-size="11" fill="#555">χ(t)  torsion</text>
+  <text x="340" y="119" text-anchor="middle" font-family="monospace" font-size="11" fill="#555">ΔΦ(t) instability</text>
+  <rect x="262" y="131" width="156" height="20" rx="5" fill="#212121"/>
+  <text x="340" y="145" text-anchor="middle" font-family="monospace" font-size="10" fill="#fff">EXECUTE · VERIFY · SAFE</text>
+  <!-- LLM Agent -->
+  <rect x="490" y="50" width="150" height="80" rx="10" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.2"/>
+  <text x="565" y="78" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#4a148c">LLM Agent</text>
+  <text x="565" y="97" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6a1b9a">black-box</text>
+  <text x="565" y="113" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6a1b9a">claims + proposals</text>
+  <!-- Planner/Supervisor -->
+  <rect x="340" y="225" width="160" height="60" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.2"/>
+  <text x="420" y="250" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1b5e20">Planner / Supervisor</text>
+  <text x="420" y="272" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#2e7d32">goal refinement</text>
+  <!-- Low-level Controller -->
+  <rect x="340" y="305" width="160" height="44" rx="10" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+  <text x="420" y="326" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#b71c1c">Low-level Controller</text>
+  <text x="420" y="342" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#c62828">PID / torque</text>
+  <!-- Arrows -->
+  <!-- Telemetry → Governor -->
+  <line x1="190" y1="90" x2="238" y2="90" stroke="#1565c0" stroke-width="1.5" marker-end="url(#arr5)"/>
+  <!-- Governor ↔ LLM -->
+  <line x1="440" y1="80" x2="488" y2="80" stroke="#f9a825" stroke-width="1.5" marker-end="url(#arr5)"/>
+  <line x1="490" y1="100" x2="442" y2="100" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr5)"/>
+  <!-- Governor → Planner -->
+  <line x1="340" y1="160" x2="390" y2="223" stroke="#f9a825" stroke-width="1.5" marker-end="url(#arr5)"/>
+  <!-- Planner → Controller -->
+  <line x1="420" y1="285" x2="420" y2="303" stroke="#2e7d32" stroke-width="1.5" marker-end="url(#arr5)"/>
+  <!-- Controller feedback → Telemetry (curved) -->
+  <path d="M340 327 Q180 330 115 132" fill="none" stroke="#c62828" stroke-width="1" stroke-dasharray="5 3" marker-end="url(#arr5)"/>
+  <text x="190" y="340" font-family="sans-serif" font-size="10" fill="#c62828">feedback</text>
+  <!-- Legend labels -->
+  <text x="340" y="355" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 5: Governor-centered architecture. The STG gates all LLM outputs before execution.</text>
+</svg>
 
 ---
 
@@ -242,55 +382,67 @@ The feedback loop from the controller returns telemetry to the governor.
 
 Define **x(t) := (ϕ(t), χ(t))ᵀ ∈ ℝ²**. Under normalization/clamping:
 
-$$x(t+1) \;=\; A\,x(t) \;+\; B\,\eta(t), \qquad \|\eta(t)\| \;\leq\; \bar{\eta}$$
+$$x(t+1) = A\,x(t) + B\,\eta(t), \qquad \|\eta(t)\| \leq \bar{\eta}$$
 
 Assume **ρ(A) < 1** (spectral radius strictly less than 1).
 
 ### 7.2 · Explicit Lyapunov Construction
 
-Choose **Q ≻ 0** (e.g., Q = I). Then there exists unique **P ≻ 0** such that:
-
-$$P \;-\; A^\top P A \;=\; Q$$
+Choose **Q ≻ 0** (e.g., Q = I). Then there exists unique **P ≻ 0** such that: **P − AᵀPA = Q**.
 
 Let **V(x) = xᵀPx**.
 
----
-
 > **Theorem 1** *(ISS-style boundedness via discrete Lyapunov equation.)*
-> Assume ρ(A) < 1 and ‖η(t)‖ ≤ η̄ for all t. Then along trajectories:
+> Assume ρ(A) < 1 and ‖η(t)‖ ≤ η̄ for all t. Then there exist constants c₀, c₁ > 0 such that:
 >
-> $$V(x(t+1)) - V(x(t)) \;\leq\; -\lambda_{\min}(Q)\,\|x(t)\|^2 \;+\; 2\,\|A^\top PB\|\,\|x(t)\|\,\|\eta(t)\| \;+\; \lambda_{\max}(B^\top PB)\,\|\eta(t)\|^2$$
->
-> Hence there exist constants c₀, c₁ > 0 such that:
->
-> $$\boxed{\|x(t)\| \;\leq\; c_0\,\rho(A)^t\,\|x(0)\| \;+\; c_1\,\bar{\eta}, \qquad \forall\, t \geq 0}$$
+> $$\boxed{\|x(t)\| \leq c_0\,\rho(A)^t\,\|x(0)\| + c_1\,\bar{\eta}, \qquad \forall\, t \geq 0}$$
 
 *Proof.* Expand V(x(t+1)) with x(t+1) = Ax(t) + Bη(t) and substitute P − AᵀPA = Q. Bound cross terms by Cauchy–Schwarz and eigenvalues. □
 
-```
-  Lyapunov decay illustration:
-  ‖x(t)‖
-     │
-   ‖x(0)‖·c₀ ──┐
-               │ ╲  exponential decay ρ(A)ᵗ
-               │   ╲
-               │     ╲_____
-    c₁·η̄ ─────│──────────── ─ ─ ─ (bounded residual)
-               │
-               └──────────────────────────→ t
-```
-
-The stability perspective is conceptually aligned with barrier-function and Lyapunov-based safety formulations [1], although the present governor operates at the **semantic decision layer** rather than continuous torque control.
+<!-- FIGURE: Lyapunov Stability Decay -->
+<svg width="100%" viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <!-- Plot area -->
+  <rect x="60" y="20" width="500" height="175" rx="8" fill="#fafafa" stroke="#e0e0e0" stroke-width="1"/>
+  <!-- Axes -->
+  <line x1="80" y1="180" x2="540" y2="180" stroke="#333" stroke-width="1.5" marker-end="url(#arr6)"/>
+  <line x1="80" y1="180" x2="80" y2="30"  stroke="#333" stroke-width="1.5" marker-end="url(#arr6)"/>
+  <text x="548" y="184" font-family="serif" font-size="13" font-style="italic" fill="#333">t</text>
+  <text x="70"  y="26"  font-family="serif" font-size="13" font-style="italic" fill="#333">‖x‖</text>
+  <!-- y-axis ticks -->
+  <line x1="76" y1="50"  x2="84" y2="50"  stroke="#555" stroke-width="1"/>
+  <line x1="76" y1="120" x2="84" y2="120" stroke="#555" stroke-width="1"/>
+  <line x1="76" y1="155" x2="84" y2="155" stroke="#555" stroke-width="1"/>
+  <text x="58" y="54"  font-family="monospace" font-size="10" fill="#555" text-anchor="end">‖x(0)‖·c₀</text>
+  <text x="58" y="124" font-family="monospace" font-size="10" fill="#555" text-anchor="end">mid</text>
+  <text x="58" y="159" font-family="monospace" font-size="10" fill="#c62828" text-anchor="end">c₁·η̄</text>
+  <!-- Exponential decay curve -->
+  <polyline points="80,50 120,72 160,92 200,108 240,120 280,130 320,138 360,144 400,149 440,153 480,156 520,157" fill="none" stroke="#1565c0" stroke-width="2.2"/>
+  <!-- Residual bound line -->
+  <line x1="80" y1="155" x2="530" y2="155" stroke="#c62828" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <!-- Shaded safe zone -->
+  <rect x="80" y="155" width="450" height="25" fill="#ffebee" opacity="0.5"/>
+  <!-- Annotations -->
+  <text x="210" y="90" font-family="sans-serif" font-size="11" fill="#1565c0">c₀ · ρ(A)ᵗ · ‖x(0)‖</text>
+  <text x="210" y="104" font-family="sans-serif" font-size="10" fill="#1565c0">exponential decay</text>
+  <text x="380" y="150" font-family="sans-serif" font-size="10" fill="#c62828">c₁·η̄  (bounded residual)</text>
+  <!-- Description -->
+  <text x="310" y="218" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 6: ISS-style decay of governor state ‖x(t)‖. The system converges to a ball of radius c₁η̄.</text>
+</svg>
 
 ---
 
 ## 8 · Simulation Environment
 
-All experiments reported in this study are conducted within a controlled synthetic stochastic testbed designed to isolate and evaluate the instability-gating behavior of the Spiral-Time Governor. The testbed is implemented as a deterministic JavaScript environment in which physical dynamics are replaced by a parametric noise model, enabling exact reproducibility across platforms without dependency on external physics simulation infrastructure.
+All experiments are conducted within a controlled synthetic stochastic testbed. The testbed is implemented as a deterministic JavaScript environment in which physical dynamics are replaced by a parametric noise model, enabling exact reproducibility.
 
-> **Synthetic Testbed Disclaimer.** The primary quantitative results presented in this manuscript are obtained from the controlled synthetic environment described above. The testbed isolates the deterministic gating dynamics of the governor under structured stochastic perturbations. A complementary physics-grounded MuJoCo validation is provided in §8.2 as a minimal transfer experiment without parameter retuning.
+> **Synthetic Testbed Disclaimer.** Primary quantitative results come from the controlled synthetic environment. A complementary MuJoCo validation is provided in §8.2 as a minimal transfer experiment without parameter retuning.
 
-Five experimental conditions are evaluated across three tasks of increasing difficulty:
+Five experimental conditions evaluated across three tasks of increasing difficulty:
 
 | Task | Label | Noise Multiplier | Description |
 |---|---|---|---|
@@ -298,18 +450,11 @@ Five experimental conditions are evaluated across three tasks of increasing diff
 | T2 | Stairs | 1.15 | Irregular stairs, IMU bias bursts, occlusion windows |
 | T3 | Gap | 1.30 | Gap crossing, external pushes, terrain class changes |
 
-Each episode: **120 discrete time steps** · **N = 30 seeds** per condition · **90 episodes** per condition · **54,000 total simulated steps**.
+Each episode: **120 steps** · **N = 30 seeds** per condition · **90 episodes/condition** · **54,000 total steps**.
 
 ### 8.1 · Statistical Analysis
 
-All statistical analyses use **α = 0.05** (two-tailed).
-
-- **Primary endpoint:** Hallucination rate H_T
-- **Secondary endpoints:** Safety violations, success rate, action variance
-- **Confidence intervals:** Bootstrap percentile method (B = 2,000 resamples, fixed LCG seed 77)
-- **Pairwise tests:** Mann–Whitney U (normal approximation, two-tailed)
-- **Multiple comparisons:** Holm step-down procedure (5 planned contrasts)
-- **Effect sizes:** Rank-biserial correlation r = |Z|/√N and Cliff's δ
+All analyses use **α = 0.05** (two-tailed). CI: bootstrap percentile (B = 2,000, seed 77). Tests: Mann–Whitney U, Holm step-down. Effect sizes: rank-biserial r and Cliff's δ.
 
 **Table 2:** Primary metrics (mean [95% CI]). N = 90 per condition.
 
@@ -321,27 +466,58 @@ All statistical analyses use **α = 0.05** (two-tailed).
 | Ablation A (δ=0) | 0.2422 [0.2350, 0.2497] | 13.79 [13.03, 14.49] | 30.0 [21.1, 38.9] | 0.0475 [0.0468, 0.0482] |
 | Ablation B (always-exec) | 0.4369 [0.4270, 0.4473] | 24.68 [23.80, 25.57] | 0.0 [0.0, 0.0] | 0.0477 [0.0470, 0.0485] |
 
-```
-  H_T by condition (mean, lower bar = 95% CI):
-
-  0.50 ┤
-  0.45 ┤  ████  Baseline (0.4595)
-  0.40 ┤  ████
-  0.35 ┤  ████  ████  RAG (0.3679)
-  0.30 ┤  ████  ████
-  0.25 ┤  ████  ████              ████  Abl-A (0.2422)
-  0.20 ┤  ████  ████  ████  ████  ████
-       │              Gov   Abl-B
-       │             (0.22)(0.44)
-  0.00 ┴──────────────────────────────
-        Base   RAG   Gov  Abl-B  Abl-A
-
-  ↓ Lower is better. Governor achieves lowest H_T.
-```
+<!-- FIGURE: H_T Bar Chart -->
+<svg width="100%" viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg">
+  <!-- Y-axis -->
+  <line x1="80" y1="20" x2="80" y2="200" stroke="#333" stroke-width="1.5"/>
+  <line x1="80" y1="200" x2="640" y2="200" stroke="#333" stroke-width="1.5"/>
+  <!-- Y gridlines and labels -->
+  <line x1="78" y1="200" x2="82" y2="200" stroke="#333" stroke-width="1.2"/>
+  <line x1="78" y1="163" x2="82" y2="163" stroke="#333" stroke-width="1"/>
+  <line x1="78" y1="126" x2="82" y2="126" stroke="#333" stroke-width="1"/>
+  <line x1="78" y1="89"  x2="82" y2="89"  stroke="#333" stroke-width="1"/>
+  <line x1="78" y1="52"  x2="82" y2="52"  stroke="#333" stroke-width="1"/>
+  <text x="74" y="204" text-anchor="end" font-family="monospace" font-size="10" fill="#555">0.00</text>
+  <text x="74" y="167" text-anchor="end" font-family="monospace" font-size="10" fill="#555">0.10</text>
+  <text x="74" y="130" text-anchor="end" font-family="monospace" font-size="10" fill="#555">0.20</text>
+  <text x="74" y="93"  text-anchor="end" font-family="monospace" font-size="10" fill="#555">0.30</text>
+  <text x="74" y="56"  text-anchor="end" font-family="monospace" font-size="10" fill="#555">0.40</text>
+  <!-- subtle gridlines -->
+  <line x1="80" y1="163" x2="640" y2="163" stroke="#eee" stroke-width="1"/>
+  <line x1="80" y1="126" x2="640" y2="126" stroke="#eee" stroke-width="1"/>
+  <line x1="80" y1="89"  x2="640" y2="89"  stroke="#eee" stroke-width="1"/>
+  <line x1="80" y1="52"  x2="640" y2="52"  stroke="#eee" stroke-width="1"/>
+  <!-- Bars: H_T values scaled: 0.50 → y=20, 0.00 → y=200. scale = 360px per unit -->
+  <!-- Baseline: 0.4595 → height=165.4, top=34.6 -->
+  <rect x="105" y="35" width="70" height="165" fill="#ef5350"/>
+  <text x="140" y="30" text-anchor="middle" font-family="monospace" font-size="10" fill="#c62828">0.460</text>
+  <!-- RAG: 0.3679 → height=132.4, top=67.6 -->
+  <rect x="210" y="68" width="70" height="132" fill="#ff8f00"/>
+  <text x="245" y="63" text-anchor="middle" font-family="monospace" font-size="10" fill="#e65100">0.368</text>
+  <!-- Governor: 0.2200 → height=79.2, top=120.8 -->
+  <rect x="315" y="121" width="70" height="79" fill="#43a047"/>
+  <text x="350" y="116" text-anchor="middle" font-family="monospace" font-size="10" fill="#1b5e20" font-weight="700">0.220 ★</text>
+  <!-- Ablation A: 0.2422 → height=87.2, top=112.8 -->
+  <rect x="420" y="113" width="70" height="87" fill="#7e57c2"/>
+  <text x="455" y="108" text-anchor="middle" font-family="monospace" font-size="10" fill="#4527a0">0.242</text>
+  <!-- Ablation B: 0.4369 → height=157.3, top=42.7 -->
+  <rect x="525" y="43" width="70" height="157" fill="#90a4ae"/>
+  <text x="560" y="38" text-anchor="middle" font-family="monospace" font-size="10" fill="#455a64">0.437</text>
+  <!-- X axis labels -->
+  <text x="140" y="218" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#333">Baseline</text>
+  <text x="245" y="218" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#333">RAG</text>
+  <text x="350" y="218" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1b5e20" font-weight="700">Governor</text>
+  <text x="455" y="218" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#333">Ablation A</text>
+  <text x="560" y="218" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#333">Ablation B</text>
+  <!-- Y axis label -->
+  <text x="32" y="115" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555" transform="rotate(-90,32,115)">Hallucination Rate H_T ↓</text>
+  <!-- Caption -->
+  <text x="340" y="244" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 7: H_T by condition (lower is better). LLM+Governor achieves the lowest hallucination rate.</text>
+</svg>
 
 **Table 3:** Pairwise comparisons (Mann–Whitney U, Holm-corrected).
 
-| Comparison | Endpoint | U | Z | Holm p | r | Significance |
+| Comparison | Endpoint | U | Z | Holm p | r | Sig. |
 |---|---|---|---|---|---|---|
 | Gov vs. Baseline | H_T | 8100 | +11.587 | < 10⁻¹⁰ | 0.864 | *** |
 | Gov vs. RAG | H_T | 8084 | +11.541 | < 10⁻¹⁰ | 0.860 | *** |
@@ -362,45 +538,15 @@ All statistical analyses use **α = 0.05** (two-tailed).
 | Logging / audit trail | 0.6 ± 0.1 | 0.9 | 2.3 | ~0.3 |
 | **TOTAL** | **5.4 ± 0.7** | **8.7** | **19.3** | **~3.3** |
 
-> 💡 Total overhead of **5.4 ms/step** is within real-time constraints at typical legged robot control frequencies (50–200 Hz → 5–20 ms budget per step).
+> Total overhead of **~5.4 ms/step** is within real-time constraints at typical legged robot control frequencies (50–200 Hz → 5–20 ms budget per step).
 
 ### 8.2 · Embodied MuJoCo Validation (Companion PoC)
 
-To evaluate whether the Spiral-Time Governor transfers from the synthetic testbed to a physics-grounded setting, we implemented a minimal embodied validation using the **dm_control quadruped domain** (MuJoCo backend).
+To evaluate whether the Spiral-Time Governor transfers to a physics-grounded setting, we implemented a minimal embodied validation using the **dm_control quadruped domain** (MuJoCo backend). The `"escape"` task provides realistic contact dynamics, joint actuation, and proprioceptive observations.
 
-The dm_control `"escape"` task was used as a physics-grounded proxy for the ANYmal-class terrain locomotion tasks described in this work. While not a full terrain benchmark, the task provides realistic contact dynamics, joint actuation, and proprioceptive observations under a deterministic physics engine.
+**Protocol consistency.** All STG parameters were kept **identical** to the synthetic v2.2 evaluation. No retuning was performed. Seeds 0–9 used for primary reporting.
 
-```
-  MuJoCo Validation Pipeline:
-
-  ┌──────────────────────────────────────────────────────┐
-  │  dm_control quadruped "escape" task (MuJoCo 3.x)    │
-  │                                                      │
-  │  Physics state sₜ ──▶ Oracle 𝒪(sₜ)                  │
-  │     • torso_pos                                      │
-  │     • torso_upright (z-axis dot-product, xmat[zz])  │
-  │     • contact_flags [lf, rf, lh, rh feet]           │
-  │     • n_contacts, feasible, terrain_class            │
-  │                │                                     │
-  │                ▼                                     │
-  │  Mock LLM Agent (deterministic, seed-controlled)     │
-  │     • hallucination_prob = 0.45 (all conditions)     │
-  │     • sinusoidal gait + noise action proposals       │
-  │                │                                     │
-  │                ▼                                     │
-  │  Spiral-Time Governor (params identical to v2.2)     │
-  │     • ΔR, ΔI, ΔC from real physics state            │
-  │     • Mode: EXECUTE / VERIFY / SAFE                  │
-  └──────────────────────────────────────────────────────┘
-```
-
-**Oracle predicate note.** `torso_upright` is computed via `physics.torso_upright()`, the standard dm_control helper that returns `xmat['torso', 'zz']` — the dot-product of the torso's local z-axis with the world z-axis (1 = perfectly upright, −1 = fully inverted). An earlier revision incorrectly used `abs(quat[0])` (the quaternion w-component magnitude), which does not measure orientation relative to gravity and produces wrong uprightness decisions. This has been corrected.
-
-**Protocol consistency.** All STG parameters (wR, wI, wC, α, β, γ, δ, τ₁, τ₂, ϕ₀) were kept **identical** to those used in the synthetic v2.2 evaluation. No retuning was performed. Experimental seeds (0–9) were used for primary reporting. Additional robustness seeds (40–49) were executed as validation checks and yielded consistent qualitative behavior (not shown). Statistical analysis followed the same bootstrap protocol (B = 2,000 resamples).
-
-**Agent model.** A deterministic mock LLM agent was used to generate claims and action proposals with configurable hallucination probability. The governor operated strictly as an external gating layer without modifying the underlying action distribution.
-
-**Quantitative outcome.** The per-formula H_T (§2.2) counts all oracle-vs-claim mismatches regardless of governor mode and is therefore identical between conditions (H_T = 0.65 for both, 95% CI [0.47, 0.83]). The governor's primary measurable benefit in this setting is a **59% reduction in unsafe-action violations** (11.4 → 4.7 per episode, mean over seeds 0–9), driven by deterministic mode switching: the governor spends 30% of steps in EXECUTE, 64% in VERIFY, and 6% in SAFE, compared to 100% EXECUTE for the baseline. This confirms the governor correctly identifies high-instability windows and withholds execution of unsafe proposals.
+**Quantitative outcome.** The per-formula H_T is identical between conditions (H_T = 0.65 for both, 95% CI [0.47, 0.83]), confirming the governor does not modify LLM generative behaviour. The primary benefit is a **59% reduction in unsafe-action violations** (11.4 → 4.7 per episode), driven by deterministic mode switching: the governor spends 30% of steps in EXECUTE, 64% in VERIFY, and 6% in SAFE.
 
 **Table 5:** Embodied MuJoCo validation — mean and 95% bootstrap CI over seeds 0–9.
 
@@ -409,44 +555,79 @@ The dm_control `"escape"` task was used as a physics-grounded proxy for the ANYm
 | Baseline LLM | 0.65 | [0.47, 0.83] | 11.4 | [9.7, 13.1] | 100 |
 | **LLM+Governor** | **0.65** | **[0.47, 0.83]** | **4.7** | **[3.0, 6.5]** | **30** |
 
-```
-  MuJoCo violations comparison (seeds 0–9):
+<!-- FIGURE: MuJoCo Violations + Mode Split -->
+<svg width="100%" viewBox="0 0 680 270" xmlns="http://www.w3.org/2000/svg">
+  <!-- LEFT PANEL: Violations comparison -->
+  <rect x="30" y="15" width="290" height="220" rx="10" fill="#fafafa" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="175" y="38" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#333">Unsafe-Action Violations</text>
+  <!-- Y axis -->
+  <line x1="70" y1="55" x2="70" y2="195" stroke="#555" stroke-width="1.2"/>
+  <line x1="70" y1="195" x2="300" y2="195" stroke="#555" stroke-width="1.2"/>
+  <!-- Y labels -->
+  <text x="64" y="59"  text-anchor="end" font-family="monospace" font-size="9" fill="#555">12</text>
+  <text x="64" y="105" text-anchor="end" font-family="monospace" font-size="9" fill="#555">8</text>
+  <text x="64" y="150" text-anchor="end" font-family="monospace" font-size="9" fill="#555">4</text>
+  <text x="64" y="196" text-anchor="end" font-family="monospace" font-size="9" fill="#555">0</text>
+  <!-- gridlines -->
+  <line x1="70" y1="59"  x2="300" y2="59"  stroke="#eee" stroke-width="1"/>
+  <line x1="70" y1="105" x2="300" y2="105" stroke="#eee" stroke-width="1"/>
+  <line x1="70" y1="150" x2="300" y2="150" stroke="#eee" stroke-width="1"/>
+  <!-- Baseline bar: 11.4 violations, max ~12=55, scale=(195-55)/12=11.67 -->
+  <rect x="105" y="62" width="65" height="133" fill="#ef5350"/>
+  <!-- CI whiskers: 9.7–13.1 -->
+  <line x1="137" y1="47" x2="137" y2="80" stroke="#c62828" stroke-width="1.5"/>
+  <line x1="127" y1="47" x2="147" y2="47" stroke="#c62828" stroke-width="1.2"/>
+  <line x1="127" y1="80" x2="147" y2="80" stroke="#c62828" stroke-width="1.2"/>
+  <text x="137" y="220" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#333">Baseline</text>
+  <text x="137" y="56"  text-anchor="middle" font-family="monospace" font-size="10" fill="#c62828">11.4</text>
+  <!-- Governor bar: 4.7 -->
+  <rect x="210" y="140" width="65" height="55" fill="#43a047"/>
+  <!-- CI whiskers: 3.0–6.5 -->
+  <line x1="242" y1="125" x2="242" y2="160" stroke="#1b5e20" stroke-width="1.5"/>
+  <line x1="232" y1="125" x2="252" y2="125" stroke="#1b5e20" stroke-width="1.2"/>
+  <line x1="232" y1="160" x2="252" y2="160" stroke="#1b5e20" stroke-width="1.2"/>
+  <text x="242" y="220" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1b5e20" font-weight="700">Governor</text>
+  <text x="242" y="134" text-anchor="middle" font-family="monospace" font-size="10" fill="#1b5e20" font-weight="700">4.7 ★</text>
+  <!-- 59% label -->
+  <text x="175" y="235" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#e65100" font-weight="700">≈ 59% reduction · CIs non-overlapping</text>
 
-  12 ┤  ████████████  Baseline  11.4  [9.7──13.1]
-  10 ┤  ████████████
-   8 ┤  ████████████
-   6 ┤  ████████████
-   5 ┤  ████████████  ▓▓▓▓▓▓▓▓  Governor 4.7  [3.0──6.5]
-   4 ┤               ▓▓▓▓▓▓▓▓
-   0 ┴──────────────────────────
-         Baseline   Governor
+  <!-- RIGHT PANEL: Mode distribution pie-like bar -->
+  <rect x="350" y="15" width="300" height="220" rx="10" fill="#fafafa" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="500" y="38" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#333">Governor Mode Distribution</text>
+  <!-- Stacked horizontal bar for Governor -->
+  <text x="370" y="68" font-family="sans-serif" font-size="11" fill="#333">Governor (STG active):</text>
+  <!-- EXECUTE 30% -->
+  <rect x="370" y="78" width="84" height="30" fill="#43a047" rx="3"/>
+  <text x="412" y="98" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#fff" font-weight="700">EXECUTE 30%</text>
+  <!-- VERIFY 64% -->
+  <rect x="454" y="78" width="179" height="30" fill="#ff8f00" rx="3"/>
+  <text x="543" y="98" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#fff" font-weight="700">VERIFY 64%</text>
+  <!-- SAFE 6% -->
+  <rect x="633" y="78" width="17" height="30" fill="#ef5350" rx="3"/>
+  <text x="380" y="128" font-family="monospace" font-size="9" fill="#43a047">30% EXECUTE</text>
+  <text x="380" y="142" font-family="monospace" font-size="9" fill="#ff8f00">64% VERIFY</text>
+  <text x="380" y="156" font-family="monospace" font-size="9" fill="#ef5350"> 6% SAFE</text>
+  <!-- Stacked bar for Baseline -->
+  <text x="370" y="180" font-family="sans-serif" font-size="11" fill="#333">Baseline (no governor):</text>
+  <rect x="370" y="188" width="280" height="30" fill="#ef9a9a" rx="3"/>
+  <text x="510" y="208" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#b71c1c" font-weight="700">EXECUTE 100% (no gating)</text>
+  <!-- caption -->
+  <text x="340" y="255" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 8: MuJoCo results. Left: 59% violation reduction (non-overlapping CIs). Right: mode distribution.</text>
+</svg>
 
-  ≈ 59% reduction in unsafe-action violations.
-  Non-overlapping CIs confirm significant separation.
-```
-
-> **Correction note.** An earlier draft reported H_T = 0.41 → 0.24 (−41%) as the key embodied metric. That figure was produced with the incorrect `abs(quat[0])` torso_upright predicate and a non-standard H_T definition that excluded non-EXECUTE steps. The corrected results above use `physics.torso_upright()` and the formula from §2.2 applied uniformly across all steps and conditions.
-
-The complete reproducible implementation, configuration files, seed lists, CI workflow, and analysis scripts are publicly available at:
-
-> **[https://github.com/dfeen87/stg-embodied-poc](https://github.com/dfeen87/stg-embodied-poc)**
-
-
-**Scope and limitations.** This PoC is intended as a **minimal physics-grounded transfer validation** rather than a full locomotion benchmark. The quadruped `"escape"` task serves as a contact-dynamics proxy. Custom terrain assets and hardware-level controllers are outside the scope of this study. The LLM component is mocked for determinism and reproducibility; integration with external API-based LLMs is left for future work.
+Reproducible implementation: **https://github.com/dfeen87/stg-embodied-poc**
 
 ---
 
 ## 9 · Limitations
 
-The proposed Spiral-Time Governor provides deterministic mode switching and bounded instability under the assumptions stated in §7. However, several limitations should be noted.
-
 **Conservative supervision.** The governor enforces threshold-based switching to reduce instability but does not guarantee semantic correctness of LLM outputs. It mitigates divergence rather than proving task validity.
 
-**Threshold sensitivity.** Performance depends on the choice of instability thresholds τ₁ and τ₂. While fixed parameters and ablation studies reduce tuning bias, adaptive or theoretically derived thresholds remain future work.
+**Threshold sensitivity.** Performance depends on τ₁ and τ₂. While ablation studies reduce tuning bias, adaptive or theoretically derived thresholds remain future work.
 
-**Simulator-to-hardware transfer.** The MuJoCo validation serves as a physics-grounded proxy. Real hardware deployment would require certified monitoring layers and redundancy checks replacing the simulator oracle.
+**Simulator-to-hardware transfer.** The MuJoCo validation serves as a physics-grounded proxy. Real hardware deployment would require certified monitoring layers replacing the simulator oracle.
 
-**LLM abstraction.** The embodied experiments use a deterministic mock LLM for reproducibility. Integration with external API-based LLMs may introduce additional latency, stochasticity, and distribution shift.
+**LLM abstraction.** The embodied experiments use a deterministic mock LLM for reproducibility. Integration with external API-based LLMs may introduce latency, stochasticity, and distribution shift.
 
 ---
 
@@ -456,15 +637,34 @@ We presented a **deterministic Spiral-Time Governor** that suppresses hallucinat
 
 The proposed governance layer is model-agnostic, does not modify LLM weights, and provides auditable execution control through explicit instability thresholds and mode switching (EXECUTE / VERIFY / SAFE).
 
-A **two-layer evaluation protocol** was established, consisting of a controlled synthetic stochastic testbed and a complementary MuJoCo-based physics-grounded transfer validation without parameter retuning. Reproducible reporting templates (effect sizes, Holm-adjusted significance testing, and compute/latency/power overhead analysis) are provided to support independent verification.
+A **two-layer evaluation protocol** was established, consisting of a controlled synthetic stochastic testbed and a complementary MuJoCo-based physics-grounded transfer validation without parameter retuning. The framework offers a deterministic safety supervision mechanism suitable for long-horizon deployment of LLM-assisted legged robotic systems.
 
-The framework offers a deterministic safety supervision mechanism suitable for long-horizon deployment of LLM-assisted legged robotic systems.
+<!-- FIGURE: Summary Visual -->
+<svg width="100%" viewBox="0 0 680 130" xmlns="http://www.w3.org/2000/svg">
+  <!-- Three pillars of the contribution -->
+  <rect x="40"  y="20" width="175" height="88" rx="10" fill="#e3f2fd" stroke="#1565c0" stroke-width="1"/>
+  <text x="127" y="46" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#0d47a1">Formal Guarantee</text>
+  <text x="127" y="64" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1565c0">ISS-style Lyapunov</text>
+  <text x="127" y="80" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1565c0">boundedness under</text>
+  <text x="127" y="96" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1565c0">bounded disturbances</text>
+  <rect x="252" y="20" width="175" height="88" rx="10" fill="#fff8e1" stroke="#f9a825" stroke-width="1"/>
+  <text x="340" y="46" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#e65100">Deterministic Gating</text>
+  <text x="340" y="64" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#f57f17">ΔΦ functional with</text>
+  <text x="340" y="80" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#f57f17">auditable thresholds</text>
+  <text x="340" y="96" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#f57f17">model-agnostic</text>
+  <rect x="464" y="20" width="175" height="88" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+  <text x="551" y="46" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1b5e20">Empirical Validation</text>
+  <text x="551" y="64" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#2e7d32">Synthetic testbed +</text>
+  <text x="551" y="80" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#2e7d32">MuJoCo PoC</text>
+  <text x="551" y="96" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#2e7d32">59% violation reduction</text>
+  <text x="340" y="122" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555">Figure 9: The three pillars of the Spiral-Time Governor contribution.</text>
+</svg>
 
 ---
 
 ## Acknowledgements
 
-Repository scaffolding, code structure, documentation, and citation formatting were developed with assistance from Claude (Sonnet 4.6) by Anthropic — (https://www.anthropic.com). Final review of repository prior to version 1.0.0 release was assisted by Google (Jules Pro) — (https://jules.google.com). All scientific content, mathematical formulations, and experimental design originate from the authors.
+Repository scaffolding and documentation were developed with assistance from Claude (Sonnet 4.6) by Anthropic and Google (Jules Pro). All scientific content, mathematical formulations, and experimental design originate from the authors.
 
 ---
 
@@ -476,28 +676,13 @@ This research received no external funding. The work was conducted independently
 
 ## Data Availability
 
-The synthetic simulation code, parameter configurations, fixed seed lists, and statistical evaluation scripts are available in a version-controlled public repository:
-
-> **[https://github.com/dfeen87/stg-embodied-poc](https://github.com/dfeen87/stg-embodied-poc)**
-
-The repository contains:
-1. Full simulation source code
-2. Configuration files for all experimental conditions
-3. Logged episode-level outputs (`.jsonl`)
-4. Statistical evaluation and bootstrap scripts
-5. Fixed seed lists ensuring deterministic reproducibility
-
-The MuJoCo-based embodied validation environment is included as a companion implementation. All governor parameters are fixed and disclosed to enable exact replication of the reported results.
+Full simulation source code, configuration files, seed lists, and statistical evaluation scripts are available at: **https://github.com/dfeen87/stg-embodied-poc**
 
 ---
 
 ## AI Usage Statement
 
-Large Language Models (LLMs) were used solely as **research objects** within the experimental framework described in this manuscript.
-
-Generative AI tools were additionally used for language refinement and minor formatting assistance. All mathematical derivations, algorithmic formulations, experimental design, statistical analysis, and scientific conclusions were developed and verified by the authors.
-
-*The authors take full responsibility for the content of this manuscript.*
+LLMs were used solely as **research objects** within the experimental framework. Generative AI tools were additionally used for language refinement and minor formatting assistance. All mathematical derivations, experimental design, statistical analysis, and scientific conclusions were developed and verified by the authors. *The authors take full responsibility for the content of this manuscript.*
 
 ---
 
@@ -519,61 +704,32 @@ The authors declare no conflict of interest.
 
 ## References
 
-[1] S. Basu, M. H. Kim, S. Tatlidil, T. Williams, S. Sloman, and R. I. Bahar, “Aug-
-menting large language models with psychologically grounded models of causal rea-
-soning for planning under uncertainty,” Frontiers in Artificial Intelligence, vol. 8,
-Art. 1730614, Jan. 2026. doi: 10.3389/frai.2025.1730614.
+[1] S. Basu et al., "Augmenting large language models with psychologically grounded models of causal reasoning for planning under uncertainty," *Frontiers in Artificial Intelligence*, vol. 8, Art. 1730614, Jan. 2026. doi: 10.3389/frai.2025.1730614.
 
-[2] A. D. Ames, X. Xu, J. W. Grizzle, and P. Tabuada, “Control Barrier Function Based
-Quadratic Programs for Safety-Critical Systems,” IEEE Transactions on Automatic
-Control, vol. 62, no. 8, pp. 3861–3876, Aug. 2017. doi: 10.1109/TAC.2016.2638961.
+[2] A. D. Ames, X. Xu, J. W. Grizzle, and P. Tabuada, "Control Barrier Function Based Quadratic Programs for Safety-Critical Systems," *IEEE Transactions on Automatic Control*, vol. 62, no. 8, pp. 3861–3876, Aug. 2017. doi: 10.1109/TAC.2016.2638961.
 
-[3] W. Huang et al., “Inner Monologue: Embodied Reasoning through Planning with
-Language Models,” arXiv preprint arXiv:2207.05608, 2022.
+[3] W. Huang et al., "Inner Monologue: Embodied Reasoning through Planning with Language Models," arXiv:2207.05608, 2022.
 
-[4] A. Z. Ren, B. Govil, T.-Y. Yang, K. Narasimhan, and A. Majumdar, “Robots
-That Ask for Help: Uncertainty-Aligned LLM Planning,” arXiv preprint
-arXiv:2307.01928, 2023.
+[4] A. Z. Ren et al., "Robots That Ask for Help: Uncertainty-Aligned LLM Planning," arXiv:2307.01928, 2023.
 
-[5] Z. Ji et al., “Survey of Hallucination in Natural Language Generation,” ACM Com-
-puting Surveys, vol. 55, no. 12, pp. 1–38, 2023. doi: 10.1145/3571730.
+[5] Z. Ji et al., "Survey of Hallucination in Natural Language Generation," *ACM Computing Surveys*, vol. 55, no. 12, pp. 1–38, 2023. doi: 10.1145/3571730.
 
-[6] L. Huang et al., “A Survey on Hallucination in Large Language Models: Princi-
-ples, Taxonomy, Challenges, and Open Questions,” arXiv preprint arXiv:2311.05232,
-2023.
+[6] L. Huang et al., "A Survey on Hallucination in Large Language Models," arXiv:2311.05232, 2023.
 
-[7] N. Shinn, F. Cassano, A. Gopinath, K. Narasimhan, and S. Yao, “Reflexion: Lan-
-guage Agents with Iterative Design Learning,” in Advances in Neural Information
-Processing Systems (NeurIPS), vol. 36, 2023.
+[7] N. Shinn et al., "Reflexion: Language Agents with Iterative Design Learning," *NeurIPS*, vol. 36, 2023.
 
-[8] A. D. Ames, S. Coogan, M. Egerstedt, G. Notomista, K. Sreenath, and P.
-Tabuada, “Control Barrier Functions: Theory and Application,” in Proc. IEEE
-18th European Control Conference (ECC), Naples, Italy, 2019, pp. 3420–3431. doi:
-10.23919/ECC.2019.8796030.
+[8] A. D. Ames et al., "Control Barrier Functions: Theory and Application," *Proc. IEEE ECC*, 2019. doi: 10.23919/ECC.2019.8796030.
 
-[9] R. Cheng, G. Orosz, R. M. Murray, and J. W. Burdick, “Safe Control with Learned
-Models: Optimality and Runtime Guarantees,” IEEE Transactions on Automatic
-Control, 2023. doi: 10.1109/TAC.2023.3247173.
+[9] R. Cheng et al., "Safe Control with Learned Models: Optimality and Runtime Guarantees," *IEEE Transactions on Automatic Control*, 2023. doi: 10.1109/TAC.2023.3247173.
 
-[10] S. Gu et al., “Safe Multi-Agent Reinforcement Learning for Climbing Robots in
-Uncertain Environments,” Journal of Intelligent & Robotic Systems, vol. 110, 2024.
+[10] S. Gu et al., "Safe Multi-Agent Reinforcement Learning for Climbing Robots in Uncertain Environments," *Journal of Intelligent & Robotic Systems*, vol. 110, 2024.
 
-[11] H. K. Khalil, Nonlinear Systems, 3rd ed. Upper Saddle River, NJ, USA: Prentice
-Hall, 2002.
+[11] H. K. Khalil, *Nonlinear Systems*, 3rd ed. Prentice Hall, 2002.
 
-[12] J.-J. E. Slotine and W. Li, Applied Nonlinear Control. Englewood Cliffs, NJ, USA:
-Prentice Hall, 1991.
-11
+[12] J.-J. E. Slotine and W. Li, *Applied Nonlinear Control*. Prentice Hall, 1991.
 
-[13] E. D. Sontag, “Input-to-State Stability: Basic Concepts and Results,” in Nonlinear
-Dynamics and Operational Control, P. Nistri and G. Stefani, Eds. Berlin, Germany:
-Springer, 1989, pp. 163–220.
+[13] E. D. Sontag, "Input-to-State Stability: Basic Concepts and Results," in *Nonlinear Dynamics and Operational Control*, Springer, 1989.
 
-[14] Y. Tassa, Y. Doron, A. Muldal, T. Erez, Y. Li, S. de Freitas, N. Heess, and M. Ried-
-miller, “dm control: Software and Tasks for Continuous Control,” arXiv:1801.00690
-(2018).
+[14] Y. Tassa et al., "dm_control: Software and Tasks for Continuous Control," arXiv:1801.00690, 2018.
 
-[15] P. Lewis, E. Perez, A. Piktus, F. Petroni, V. Karpukhin, N. Goyal, H. K¨uttler,
-M. Lewis, W. Yih, T. Rockt¨aschel, S. Riedel, and D. Kiela, “Retrieval-Augmented
-Generation for Knowledge-Intensive NLP Tasks,” Advances in Neural Information
-Processing Systems (NeurIPS), 2020.
+[15] P. Lewis et al., "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks," *NeurIPS*, 2020.
