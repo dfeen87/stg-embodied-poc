@@ -90,6 +90,14 @@ CONDITION_CONFIGS: dict[str, dict[str, Any]] = {
         "ablation": "no_delta",
         "hallucination_prob": 0.45,
     },
+    "ablation_remove_I": {
+        "ablation": "remove_I",
+        "hallucination_prob": 0.45,
+    },
+    "ablation_remove_C": {
+        "ablation": "remove_C",
+        "hallucination_prob": 0.45,
+    },
     "rag": {
         "ablation": "always_execute",
         "hallucination_prob": 0.30,
