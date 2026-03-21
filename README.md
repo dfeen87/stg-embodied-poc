@@ -159,6 +159,26 @@ After running `run_experiment.py`, the `results/` directory contains:
 
 ---
 
+## Limitations
+
+The following limitations are disclosed in the interest of academic transparency and to support appropriate interpretation of the reported results.
+
+- **Mock LLM vs. Real Reasoning.**  The deterministic mock LLM in `llm_mock/mock_llm_agent.py` does not represent real reasoning or real‑world LLM variability.  The mock agent is used deliberately to isolate the effect of the Spiral Time Governor (STG) without introducing confounding factors such as stochastic token sampling or prompt sensitivity.  A real LLM condition is included only to demonstrate robustness to non‑deterministic outputs; it does not constitute a claim of cognitive modeling.
+
+- **Simplified Environment (dm_control Quadruped).**  `envs/quadruped_terrain.py` uses a controlled dm_control locomotion task as a proxy for embodied decision‑making.  This environment does not capture full real‑world terrain complexity, multi‑contact dynamics, or hardware constraints such as actuator saturation, communication latency, or mechanical compliance.  Results should therefore be interpreted as simulation‑level evidence and should not be taken as direct evidence of transfer to physical robotic platforms.
+
+- **Oracle Simplifications.**  The oracle used for action verification is simplified and relies on idealized state information extracted directly from the simulator.  It does not model full sensor uncertainty, partial observability, or real‑world perception errors.  Noise‑augmented oracle experiments are included to partially address this gap; however, they remain approximations and do not replace a fully realistic perception pipeline.
+
+- **Scope of the STG.**  The Spiral Time Governor is a safety filter, not a hallucination‑reduction method.  STG does not modify the LLM's internal reasoning process, alter its weights, or reduce the rate at which the model produces hallucinated outputs.  Its sole function is to prevent unsafe actions from being executed; hallucinated actions that pass the safety threshold are still executed.
+
+- **Limited Task Diversity.**  The current proof‑of‑concept focuses on a single locomotion task (dm_control quadruped "escape") and a limited set of action types.  Broader task diversity—spanning manipulation, navigation, multi‑agent coordination, and varied reward structures—is required before claims can be generalised beyond the reported setting.
+
+- **Computational Constraints.**  Multi‑seed experiments (e.g., seeds 0–9 or 40–49) are limited by the available compute budget.  The reported confidence intervals and effect sizes are derived from these seed sets; larger parameter sweeps and additional held‑out seeds would further strengthen statistical confidence in the reported findings.
+
+- **Reproducibility Notes.**  Results may vary slightly across hardware configurations, dm_control versions, and LLM API responses.  Minor numerical differences are expected due to floating‑point non‑determinism, platform‑specific physics solver behaviour, and non‑deterministic LLM sampling.  Core qualitative findings are expected to be stable across these variations, but exact numerical values should not be treated as perfectly reproducible without fixing all environmental dependencies.
+
+---
+
 ## Citation
 
 If you use this code, please cite the companion paper (placeholder — update when published):
