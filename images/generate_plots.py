@@ -47,17 +47,17 @@ VIOLATIONS_CI_HI = {
 H_T = {
     "baseline": 0.4595,
     "llm_rag":  0.3679,
-    "governor": 0.2200,
-    "ablation_a": 0.2422,
+    "governor": 0.4412,
+    "ablation_a": 0.4495,
     "ablation_b": 0.4369,
 }
 H_T_CI_LO = {
-    "baseline": 0.4491, "llm_rag": 0.3585, "governor": 0.2139,
-    "ablation_a": 0.2350, "ablation_b": 0.4270,
+    "baseline": 0.4491, "llm_rag": 0.3585, "governor": 0.4348,
+    "ablation_a": 0.4421, "ablation_b": 0.4270,
 }
 H_T_CI_HI = {
-    "baseline": 0.4702, "llm_rag": 0.3775, "governor": 0.2266,
-    "ablation_a": 0.2497, "ablation_b": 0.4473,
+    "baseline": 0.4702, "llm_rag": 0.3775, "governor": 0.4476,
+    "ablation_a": 0.4569, "ablation_b": 0.4473,
 }
 
 SUCCESS_RATE = {
@@ -396,10 +396,18 @@ def plot_figure_8() -> None:
     # ── Panel B: Ablation Study ───────────────────────────────────────────────
     ax_b = axes[0, 1]
     ablations_df = _load_csv("ablations.csv")
-    abl_conds = ["full_governor", "delta_0", "remove_I", "remove_C"]
+    # Condition names match run_experiment.py output: "governor" (full ΔΦ),
+    # "ablation_a" (δ=0), "ablation_remove_I", "ablation_remove_C".
+    abl_conds = ["governor", "ablation_a", "ablation_remove_I", "ablation_remove_C"]
     abl_labels = ["Full Governor", "δ=0", "remove_I", "remove_C"]
-    abl_mean_series, _ = _group_mean_std(ablations_df, "condition", "violation_rate")
-    abl_std_series, _ = _group_mean_std(ablations_df, "condition", "std")
+    abl_mean_series, abl_std_computed = _group_mean_std(ablations_df, "condition", "violation_rate")
+    # Use pre-computed std column when available (summary format with one row per
+    # condition); fall back to std of per-seed violation_rate values when the CSV
+    # contains per-seed rows (run_experiment.py format, no "std" column).
+    if "std" in ablations_df.columns:
+        abl_std_series, _ = _group_mean_std(ablations_df, "condition", "std")
+    else:
+        abl_std_series = abl_std_computed
     abl_means = [abl_mean_series[c] for c in abl_conds]
     abl_stds = [abl_std_series[c] for c in abl_conds]
     x_b = np.arange(len(abl_conds))
@@ -423,7 +431,18 @@ def plot_figure_8() -> None:
     # to percent.
     ax_c = axes[1, 0]
     sens_df = _load_csv("sensitivity_delta_phi.csv")
-    wf = sens_df["weight_factor"].values
+    # The sensitivity CSV uses column "factor" in both formats:
+    # - Pre-computed summary: 5 rows, one per factor value (the reference CSV in results/).
+    # - run_sensitivity_sweep.py output: 20 rows (4 params × 5 factors); detected
+    #   by the presence of a "param" column.  When per-param rows exist, average
+    #   across all four parameters for each factor level before plotting.
+    if "param" in sens_df.columns:
+        sens_df = (
+            sens_df.groupby("factor")[["success_rate", "violation_rate", "delta_phi_stability"]]
+            .mean()
+            .reset_index()
+        )
+    wf = sens_df["factor"].values
     ax_c.plot(wf, sens_df["success_rate"].values, "o-", color="#4C72B0",
               label="Success rate (%)", linewidth=1.6, markersize=6)
     ax_c.plot(wf, sens_df["violation_rate"].values, "s-", color="#C44E52",
