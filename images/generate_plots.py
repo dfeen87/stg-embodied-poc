@@ -354,6 +354,10 @@ def plot_figure_8() -> None:
     fig.suptitle("Figure 8 — Robustness Summary", fontsize=13, fontweight="bold")
 
     # ── Panel A: Violation Rate vs Hallucination Rate ─────────────────────────
+    # Dual Y-axes: left = violation rate (unsafe actions per episode, absolute
+    # count), right = hallucination rate H_T (fraction of claims, normalised
+    # [0, 1]).  The governor does NOT modify the LLM; in the primary MuJoCo
+    # experiment baseline and governed conditions show identical H_T.
     ax_a = axes[0, 0]
     metrics_df = _load_csv("metrics.csv")
     panel_a_conds = ["baseline", "governor", "real_llm", "noisy_oracle"]
@@ -368,17 +372,25 @@ def plot_figure_8() -> None:
     ]
     x_a = np.arange(len(panel_a_conds))
     w_a = 0.35
-    ax_a.bar(x_a - w_a / 2, viol_rates, w_a, label="Violation Rate", color="#4C72B0",
-             edgecolor="white", linewidth=0.8)
-    ax_a.bar(x_a + w_a / 2, hall_rates, w_a, label="Hallucination Rate (H_T)",
-             color="#DD8452", edgecolor="white", linewidth=0.8)
+    bars_av = ax_a.bar(x_a - w_a / 2, viol_rates, w_a,
+                       label="Violation rate (unsafe actions per episode)",
+                       color="#4C72B0", edgecolor="white", linewidth=0.8)
+    ax_a.set_ylabel("Violation rate (unsafe actions per episode)")
+    ax_a.set_ylim(0, max(viol_rates) * 1.35)
+    ax_a2 = ax_a.twinx()
+    bars_ah = ax_a2.bar(x_a + w_a / 2, hall_rates, w_a,
+                        label="Hallucination rate H_T (fraction of claims)",
+                        color="#DD8452", edgecolor="white", linewidth=0.8)
+    ax_a2.set_ylabel("Hallucination rate H_T (fraction of claims)")
+    ax_a2.set_ylim(0, 1)
     ax_a.set_xticks(x_a)
     ax_a.set_xticklabels(panel_a_labels, fontsize=8)
-    ax_a.set_ylabel("Rate")
-    ax_a.set_title("(A) Violation Rate vs Hallucination Rate\n"
-                   "(STG reduces violations, not hallucinations)")
-    ax_a.legend(fontsize=8)
-    ax_a.spines[["top", "right"]].set_visible(False)
+    ax_a.set_title("(A) Violation Rate vs Hallucination Rate H_T\n"
+                   "(governor ↓ violations; H_T identical in MuJoCo)")
+    handles = [bars_av, bars_ah]
+    labels_leg = [h.get_label() for h in handles]
+    ax_a.legend(handles, labels_leg, fontsize=7, loc="upper right")
+    ax_a.spines["top"].set_visible(False)
 
     # ── Panel B: Ablation Study ───────────────────────────────────────────────
     ax_b = axes[0, 1]
@@ -396,7 +408,7 @@ def plot_figure_8() -> None:
              error_kw={"linewidth": 1.2})
     ax_b.set_xticks(x_b)
     ax_b.set_xticklabels(abl_labels, fontsize=8)
-    ax_b.set_ylabel("Violation Rate")
+    ax_b.set_ylabel("Violation rate (unsafe actions per episode)")
     ax_b.set_title("(B) Ablation Study\n(necessity of all ΔΦ components)")
     ax_b.axhline(abl_means[0], color="grey", linestyle="--", linewidth=0.8,
                  label=f"full governor = {abl_means[0]:.2f}")
@@ -404,23 +416,35 @@ def plot_figure_8() -> None:
     ax_b.spines[["top", "right"]].set_visible(False)
 
     # ── Panel C: Sensitivity Sweep Stability ──────────────────────────────────
+    # Success rate (%) and violation rate (unsafe actions per episode) share the
+    # left Y-axis.  ΔΦ stability (unitless index, derived from variance of the
+    # composite trust signal) uses the right Y-axis.  Values are NOT converted
+    # to percent.
     ax_c = axes[1, 0]
     sens_df = _load_csv("sensitivity_delta_phi.csv")
     wf = sens_df["weight_factor"].values
     ax_c.plot(wf, sens_df["success_rate"].values, "o-", color="#4C72B0",
-              label="Success Rate (%)", linewidth=1.6, markersize=6)
+              label="Success rate (%)", linewidth=1.6, markersize=6)
     ax_c.plot(wf, sens_df["violation_rate"].values, "s-", color="#C44E52",
-              label="Violation Rate", linewidth=1.6, markersize=6)
-    ax_c.plot(wf, sens_df["delta_phi_stability"].values * 100, "^-", color="#55A868",
-              label="ΔΦ Stability (×100)", linewidth=1.6, markersize=6)
+              label="Violation rate (unsafe actions per episode)",
+              linewidth=1.6, markersize=6)
     ax_c.axvline(1.0, color="grey", linestyle="--", linewidth=0.8, label="nominal (1.0)")
     ax_c.set_xlabel("Weight Factor")
-    ax_c.set_ylabel("Value")
+    ax_c.set_ylabel("Success rate (%) / Violation rate (unsafe actions per episode)")
     ax_c.set_title("(C) Sensitivity Sweep Stability\n(±30% weight variation)")
-    ax_c.legend(fontsize=8)
-    ax_c.spines[["top", "right"]].set_visible(False)
+    ax_c.spines["top"].set_visible(False)
+    ax_c2 = ax_c.twinx()
+    ax_c2.plot(wf, sens_df["delta_phi_stability"].values, "^-", color="#55A868",
+               label="ΔΦ stability (unitless index)", linewidth=1.6, markersize=6)
+    ax_c2.set_ylabel("ΔΦ stability (unitless index)")
+    ax_c2.spines["top"].set_visible(False)
+    handles_c = (ax_c.get_lines() + ax_c2.get_lines())
+    labels_c = [h.get_label() for h in handles_c]
+    ax_c.legend(handles_c, labels_c, fontsize=7, loc="lower right")
 
     # ── Panel D: Real LLM vs Mock LLM ─────────────────────────────────────────
+    # Dual Y-axes: left = success rate (%), right = violation rate (unsafe
+    # actions per episode, absolute count).
     ax_d = axes[1, 1]
     llm_conds = ["mock_llm", "real_llm"]
     llm_labels = ["Mock LLM", "Real LLM"]
@@ -434,18 +458,38 @@ def plot_figure_8() -> None:
     ]
     x_d = np.arange(len(llm_conds))
     w_d = 0.35
-    ax_d.bar(x_d - w_d / 2, llm_success, w_d, label="Success Rate (%)",
-             color="#4C72B0", edgecolor="white", linewidth=0.8)
-    ax_d.bar(x_d + w_d / 2, llm_viol, w_d, label="Violation Rate",
-             color="#DD8452", edgecolor="white", linewidth=0.8)
+    bars_ds = ax_d.bar(x_d - w_d / 2, llm_success, w_d,
+                       label="Success rate (%)",
+                       color="#4C72B0", edgecolor="white", linewidth=0.8)
+    ax_d.set_ylabel("Success rate (%)")
+    ax_d.set_ylim(0, max(llm_success) * 1.45)
+    ax_d2 = ax_d.twinx()
+    bars_dv = ax_d2.bar(x_d + w_d / 2, llm_viol, w_d,
+                        label="Violation rate (unsafe actions per episode)",
+                        color="#DD8452", edgecolor="white", linewidth=0.8)
+    ax_d2.set_ylabel("Violation rate (unsafe actions per episode)")
+    ax_d2.set_ylim(0, max(llm_viol) * 1.45)
     ax_d.set_xticks(x_d)
     ax_d.set_xticklabels(llm_labels, fontsize=9)
-    ax_d.set_ylabel("Rate / %")
     ax_d.set_title("(D) Real LLM vs Mock LLM\n(STG works under non-deterministic LLM)")
-    ax_d.legend(fontsize=8)
-    ax_d.spines[["top", "right"]].set_visible(False)
+    handles_d = [bars_ds, bars_dv]
+    labels_d = [h.get_label() for h in handles_d]
+    ax_d.legend(handles_d, labels_d, fontsize=7, loc="upper right")
+    ax_d.spines["top"].set_visible(False)
 
-    fig.tight_layout()
+    fig.tight_layout(rect=[0, 0.08, 1, 1])
+    fig.text(
+        0.5, 0.03,
+        "Figure 8. Robustness summary across noise conditions, ablations, and ΔΦ sensitivity. "
+        "All metrics use explicit units: success rate (%), violation rate (unsafe actions per episode), "
+        "hallucination rate H_T (fraction), and ΔΦ stability (unitless index). "
+        "The governor reduces unsafe actions without modifying the underlying LLM, "
+        "as confirmed by identical hallucination rates in MuJoCo.",
+        ha="center", va="bottom", fontsize=7.5, wrap=True,
+        style="italic",
+        bbox=dict(boxstyle="round,pad=0.3", facecolor="#f5f5f5", edgecolor="#cccccc",
+                  alpha=0.8),
+    )
     _savefig(fig, "fig8_robustness_summary.png")
 
 
