@@ -2,6 +2,9 @@
 
 Generate illustration plots from VALIDATION_ANALYSIS.md simulation data.
 Run from repository root: python images/generate_plots.py
+
+Pass --fig8 to regenerate only Figure 8:
+    python images/generate_plots.py --fig8
 """
 
 from __future__ import annotations
@@ -11,6 +14,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
 
 OUTPUT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -321,14 +325,150 @@ def plot_performance_overhead() -> None:
     _savefig(fig, "fig7_performance_overhead.png")
 
 
+# ── Figure 8 helpers ──────────────────────────────────────────────────────────
+
+RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "results")
+
+
+def _load_csv(filename: str) -> pd.DataFrame:
+    """Load a CSV from the results directory."""
+    path = os.path.join(RESULTS_DIR, filename)
+    return pd.read_csv(path)
+
+
+def _group_mean_std(
+    df: pd.DataFrame, group_col: str, value_col: str
+) -> tuple:
+    """Return (means, stds) Series indexed by group_col for value_col."""
+    grouped = df.groupby(group_col)[value_col]
+    return grouped.mean(), grouped.std(ddof=1).fillna(0)
+
+
+# ── Plot 8: Robustness summary (4-panel) ──────────────────────────────────────
+
+
+def plot_figure_8() -> None:
+    """Generate a 2×2 panel figure summarising robustness experiments."""
+
+    fig, axes = plt.subplots(2, 2, figsize=(13, 10))
+    fig.suptitle("Figure 8 — Robustness Summary", fontsize=13, fontweight="bold")
+
+    # ── Panel A: Violation Rate vs Hallucination Rate ─────────────────────────
+    ax_a = axes[0, 0]
+    metrics_df = _load_csv("metrics.csv")
+    panel_a_conds = ["baseline", "governor", "real_llm", "noisy_oracle"]
+    panel_a_labels = ["Baseline", "Governor", "Real LLM", "Noisy Oracle"]
+    viol_rates = [
+        metrics_df.loc[metrics_df["condition"] == c, "violation_rate"].values[0]
+        for c in panel_a_conds
+    ]
+    hall_rates = [
+        metrics_df.loc[metrics_df["condition"] == c, "H_T"].values[0]
+        for c in panel_a_conds
+    ]
+    x_a = np.arange(len(panel_a_conds))
+    w_a = 0.35
+    ax_a.bar(x_a - w_a / 2, viol_rates, w_a, label="Violation Rate", color="#4C72B0",
+             edgecolor="white", linewidth=0.8)
+    ax_a.bar(x_a + w_a / 2, hall_rates, w_a, label="Hallucination Rate (H_T)",
+             color="#DD8452", edgecolor="white", linewidth=0.8)
+    ax_a.set_xticks(x_a)
+    ax_a.set_xticklabels(panel_a_labels, fontsize=8)
+    ax_a.set_ylabel("Rate")
+    ax_a.set_title("(A) Violation Rate vs Hallucination Rate\n"
+                   "(STG reduces violations, not hallucinations)")
+    ax_a.legend(fontsize=8)
+    ax_a.spines[["top", "right"]].set_visible(False)
+
+    # ── Panel B: Ablation Study ───────────────────────────────────────────────
+    ax_b = axes[0, 1]
+    ablations_df = _load_csv("ablations.csv")
+    abl_conds = ["full_governor", "delta_0", "remove_I", "remove_C"]
+    abl_labels = ["Full Governor", "δ=0", "remove_I", "remove_C"]
+    abl_mean_series, _ = _group_mean_std(ablations_df, "condition", "violation_rate")
+    abl_std_series, _ = _group_mean_std(ablations_df, "condition", "std")
+    abl_means = [abl_mean_series[c] for c in abl_conds]
+    abl_stds = [abl_std_series[c] for c in abl_conds]
+    x_b = np.arange(len(abl_conds))
+    abl_colors = ["#55A868", "#C44E52", "#8172B2", "#CCB974"]
+    ax_b.bar(x_b, abl_means, yerr=abl_stds, color=abl_colors, width=0.5,
+             edgecolor="white", linewidth=0.8, capsize=5,
+             error_kw={"linewidth": 1.2})
+    ax_b.set_xticks(x_b)
+    ax_b.set_xticklabels(abl_labels, fontsize=8)
+    ax_b.set_ylabel("Violation Rate")
+    ax_b.set_title("(B) Ablation Study\n(necessity of all ΔΦ components)")
+    ax_b.axhline(abl_means[0], color="grey", linestyle="--", linewidth=0.8,
+                 label=f"full governor = {abl_means[0]:.2f}")
+    ax_b.legend(fontsize=8)
+    ax_b.spines[["top", "right"]].set_visible(False)
+
+    # ── Panel C: Sensitivity Sweep Stability ──────────────────────────────────
+    ax_c = axes[1, 0]
+    sens_df = _load_csv("sensitivity_delta_phi.csv")
+    wf = sens_df["weight_factor"].values
+    ax_c.plot(wf, sens_df["success_rate"].values, "o-", color="#4C72B0",
+              label="Success Rate (%)", linewidth=1.6, markersize=6)
+    ax_c.plot(wf, sens_df["violation_rate"].values, "s-", color="#C44E52",
+              label="Violation Rate", linewidth=1.6, markersize=6)
+    ax_c.plot(wf, sens_df["delta_phi_stability"].values * 100, "^-", color="#55A868",
+              label="ΔΦ Stability (×100)", linewidth=1.6, markersize=6)
+    ax_c.axvline(1.0, color="grey", linestyle="--", linewidth=0.8, label="nominal (1.0)")
+    ax_c.set_xlabel("Weight Factor")
+    ax_c.set_ylabel("Value")
+    ax_c.set_title("(C) Sensitivity Sweep Stability\n(±30% weight variation)")
+    ax_c.legend(fontsize=8)
+    ax_c.spines[["top", "right"]].set_visible(False)
+
+    # ── Panel D: Real LLM vs Mock LLM ─────────────────────────────────────────
+    ax_d = axes[1, 1]
+    llm_conds = ["mock_llm", "real_llm"]
+    llm_labels = ["Mock LLM", "Real LLM"]
+    llm_success = [
+        metrics_df.loc[metrics_df["condition"] == c, "success_rate"].values[0]
+        for c in llm_conds
+    ]
+    llm_viol = [
+        metrics_df.loc[metrics_df["condition"] == c, "violation_rate"].values[0]
+        for c in llm_conds
+    ]
+    x_d = np.arange(len(llm_conds))
+    w_d = 0.35
+    ax_d.bar(x_d - w_d / 2, llm_success, w_d, label="Success Rate (%)",
+             color="#4C72B0", edgecolor="white", linewidth=0.8)
+    ax_d.bar(x_d + w_d / 2, llm_viol, w_d, label="Violation Rate",
+             color="#DD8452", edgecolor="white", linewidth=0.8)
+    ax_d.set_xticks(x_d)
+    ax_d.set_xticklabels(llm_labels, fontsize=9)
+    ax_d.set_ylabel("Rate / %")
+    ax_d.set_title("(D) Real LLM vs Mock LLM\n(STG works under non-deterministic LLM)")
+    ax_d.legend(fontsize=8)
+    ax_d.spines[["top", "right"]].set_visible(False)
+
+    fig.tight_layout()
+    _savefig(fig, "fig8_robustness_summary.png")
+
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    plot_violations()
-    plot_mode_distribution()
-    plot_hallucination_rate()
-    plot_signal_statistics()
-    plot_per_seed_violations()
-    plot_success_rate()
-    plot_performance_overhead()
-    print("All plots generated successfully.")
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Generate plots for the robotics PoC.")
+    parser.add_argument("--fig8", action="store_true",
+                        help="Regenerate only Figure 8 (robustness summary).")
+    args = parser.parse_args()
+
+    if args.fig8:
+        plot_figure_8()
+        print("Figure 8 generated successfully.")
+    else:
+        plot_violations()
+        plot_mode_distribution()
+        plot_hallucination_rate()
+        plot_signal_statistics()
+        plot_per_seed_violations()
+        plot_success_rate()
+        plot_performance_overhead()
+        plot_figure_8()
+        print("All plots generated successfully.")

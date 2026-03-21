@@ -1,0 +1,5 @@
+condition,violation_rate,std
+full_governor,4.87,0.63
+delta_0,8.92,0.91
+remove_I,7.34,0.78
+remove_C,6.81,0.74
