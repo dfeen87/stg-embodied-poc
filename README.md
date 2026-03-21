@@ -47,6 +47,7 @@ Results are written to `results/` as CSV and JSON files (see [Output Files](#out
 ```
 stg-embodied-poc/
 ├── README.md
+├── PAPER.md                    # Companion paper (manuscript)
 ├── VALIDATION_ANALYSIS.md      # Detailed validation results and statistical analysis
 ├── CITATION.cff                # Citation metadata for the companion paper
 ├── requirements.txt
@@ -63,7 +64,8 @@ stg-embodied-poc/
 │   └── spiral_time_governor.py # STG implementation (math from paper)
 ├── llm_mock/
 │   ├── __init__.py
-│   └── mock_llm_agent.py       # Deterministic mock LLM agent
+│   ├── mock_llm_agent.py       # Deterministic mock LLM agent
+│   └── real_llm_agent.py       # Real LLM agent (API-backed)
 ├── analysis/
 │   ├── __init__.py
 │   └── compute_metrics.py      # Metric computation from episode logs
@@ -75,16 +77,23 @@ stg-embodied-poc/
 │   ├── fig4_signal_statistics.png
 │   ├── fig5_per_seed_violations_heatmap.png
 │   ├── fig6_success_rate.png
-│   └── fig7_performance_overhead.png
+│   ├── fig7_performance_overhead.png
+│   └── fig8_robustness_summary.png
 ├── run_experiment.py           # Main experiment runner (CLI)
+├── run_sensitivity_sweep.py    # Sensitivity sweep over ΔΦ threshold (δ)
 ├── scripts/
 │   ├── run_all.sh              # Full pipeline (all conditions, seeds 0–9)
 │   └── run_robustness.sh       # Robustness check (governor, seeds 40–49)
 ├── tests/
 │   ├── test_governor.py
-│   └── test_env.py
+│   ├── test_env.py
+│   ├── test_real_llm_agent.py
+│   └── test_sensitivity_sweep.py
 └── results/
-    └── .gitkeep
+    ├── .gitkeep
+    ├── ablations.csv           # Per-condition ablation results
+    ├── metrics.csv             # Aggregated metrics across seeds/conditions
+    └── sensitivity_delta_phi.csv  # Sensitivity sweep results for ΔΦ threshold
 ```
 
 ---
