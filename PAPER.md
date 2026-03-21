@@ -3,9 +3,14 @@
 **Marcel Krüger¹ · Don Michael Feeney Jr.²**
 
 ¹ Independent Researcher, Germany
+
 ² Independent Researcher, USA
+
 Corresponding author: marcelkrueger092@gmail.com
-ORCID (M.K.): 0009-0002-5709-9729 · ORCID (D.M.F.): 0009-0003-1350-4160
+
+ORCID (M.K.): 0009-0002-5709-9729 
+
+ORCID (D.M.F.): 0009-0003-1350-4160
 
 *Journal of Climbing and Walking Robots · 2026 · Vol. XX(XX) · pp. 1–XX*
 DOI: *(assigned by journal)*
@@ -20,7 +25,7 @@ We introduce a deterministic external governance layer based on a Spiral-Time op
 
 Crucially, we define hallucination operationally in robotics as **falsifiable inconsistency** between LLM-issued claims/commands and a ground-truth oracle derived from simulator state. We provide (i) a formal supervisor model, (ii) a deterministic gating algorithm, and (iii) a discrete Lyapunov-based boundedness/ISS argument for the governor state under bounded measurement noise. A reproducible simulation protocol is specified for climbing and walking tasks with controlled perturbations and statistical evaluation (seeds, confidence intervals, ablation tests).
 
-In addition to the synthetic stochastic evaluation, we provide a **minimal physics-grounded transfer validation** using a MuJoCo-based quadruped environment. All governor parameters are kept identical to the synthetic setting without retuning. The embodied validation demonstrates a 59% reduction in unsafe-action violations and deterministic mode switching behavior under contact-rich dynamics.
+In addition to the synthetic stochastic evaluation, we provide a **minimal physics-grounded transfer validation** using a MuJoCo-based quadruped environment. All governor parameters are kept identical to the synthetic setting without retuning. The embodied validation reproduces the qualitative reduction in unsafe actions and deterministic mode switching behavior under contact-rich dynamics, while leaving the underlying hallucination statistics unchanged.
 
 The framework is model-agnostic and does not modify LLM weights, offering auditability and predictable behavior suitable for safety-sensitive legged robot deployments.
 
@@ -273,14 +278,7 @@ Thresholds 0 < τ₁ < τ₂ < 1 define:
 | τ₁ ≤ ΔΦ(t) < τ₂ | **VERIFY** |
 | ΔΦ(t) ≥ τ₂ | **SAFE** |
 
-**Fixed parameters (v2.2):**
 
-| Symbol | Value | Role |
-|---|---|---|
-| wR, wI, wC | 0.30, 0.40, 0.30 | Coherence weights |
-| α, β, γ, δ | 0.25, 0.35, 0.25, 0.15 | ΔΦ weights |
-| τ₁, τ₂ | 0.25, 0.55 | Mode thresholds |
-| ϕ₀ | 0.75 | Initial coherence |
 
 ---
 
@@ -442,15 +440,7 @@ All experiments are conducted within a controlled synthetic stochastic testbed. 
 
 > **Synthetic Testbed Disclaimer.** Primary quantitative results come from the controlled synthetic environment. A complementary MuJoCo validation is provided in §8.2 as a minimal transfer experiment without parameter retuning.
 
-Five experimental conditions evaluated across three tasks of increasing difficulty:
-
-| Task | Label | Noise Multiplier | Description |
-|---|---|---|---|
-| T1 | Climb | 1.00 | Discrete holds, friction variation, sensor dropout |
-| T2 | Stairs | 1.15 | Irregular stairs, IMU bias bursts, occlusion windows |
-| T3 | Gap | 1.30 | Gap crossing, external pushes, terrain class changes |
-
-Each episode: **120 steps** · **N = 30 seeds** per condition · **90 episodes/condition** · **54,000 total steps**.
+Five experimental conditions (Baseline LLM, LLM+RAG, LLM+Governor, Ablation A with δ = 0, and Ablation B always-execute) are evaluated across three tasks (T1: Climb, T2: Stairs, T3: Gap). Each episode consists of 120 discrete time steps. For each condition and task, N = 30 independent random seeds are used, yielding 90 episodes per condition and 54,000 total simulated steps.
 
 ### 8.1 · Statistical Analysis
 
@@ -544,9 +534,11 @@ All analyses use **α = 0.05** (two-tailed). CI: bootstrap percentile (B = 2,000
 
 To evaluate whether the Spiral-Time Governor transfers to a physics-grounded setting, we implemented a minimal embodied validation using the **dm_control quadruped domain** (MuJoCo backend). The `"escape"` task provides realistic contact dynamics, joint actuation, and proprioceptive observations.
 
-**Protocol consistency.** All STG parameters were kept **identical** to the synthetic v2.2 evaluation. No retuning was performed. Seeds 0–9 used for primary reporting.
+**Protocol consistency.** All STG parameters (wR, wI, wC, α, β, γ, δ, τ₁, τ₂, ϕ₀) were kept identical to those used in the synthetic evaluation. No parameter retuning was performed for the embodied setting. Experimental seeds (0–9) were used for primary reporting, with additional validation seeds (40–49) confirming consistent qualitative behavior. Statistical analysis follows the bootstrap protocol defined in Section 8.1 (B = 2000 resamples).
 
-**Quantitative outcome.** The per-formula H_T is identical between conditions (H_T = 0.65 for both, 95% CI [0.47, 0.83]), confirming the governor does not modify LLM generative behaviour. The primary benefit is a **59% reduction in unsafe-action violations** (11.4 → 4.7 per episode), driven by deterministic mode switching: the governor spends 30% of steps in EXECUTE, 64% in VERIFY, and 6% in SAFE.
+**Agent model.** A deterministic mock LLM agent was used to generate claims and action proposals with a controlled hallucination probability. The STG was applied strictly as an external supervisory layer. Importantly, the governor does not modify the underlying generative process or action distribution of the LLM, but operates solely at the level of execution gating.
+
+**Quantitative outcome.** After correcting the uprightness metric, identical hallucination rates are observed for both conditions (H_T = 0.65), indicating that the governor does not alter oracle–claim consistency or the statistical occurrence of hallucinated outputs. The primary observed effect is a substantial reduction in safety violations, decreasing from 11.4 to 4.7 violations per episode (approximately 59% reduction), with non-overlapping 95% bootstrap confidence intervals indicating statistical significance. Deterministic mode switching (EXECUTE / VERIFY / SAFE) was consistently observed across all runs. The fraction of EXECUTE mode decreased from 100% in the baseline condition to 30% under the governor, demonstrating active constraint-aware filtering while maintaining bounded computational overhead.
 
 **Table 5:** Embodied MuJoCo validation — mean and 95% bootstrap CI over seeds 0–9.
 
@@ -704,32 +696,42 @@ The authors declare no conflict of interest.
 
 ## References
 
-[1] S. Basu et al., "Augmenting large language models with psychologically grounded models of causal reasoning for planning under uncertainty," *Frontiers in Artificial Intelligence*, vol. 8, Art. 1730614, Jan. 2026. doi: 10.3389/frai.2025.1730614.
+[1] D. Driess, F. Xia, M. T. Knoop, et al., "PaLM-E: An Embodied Multimodal Language Model," arXiv:2303.03378, 2023. doi:10.48550/arXiv.2303.03378
 
-[2] A. D. Ames, X. Xu, J. W. Grizzle, and P. Tabuada, "Control Barrier Function Based Quadratic Programs for Safety-Critical Systems," *IEEE Transactions on Automatic Control*, vol. 62, no. 8, pp. 3861–3876, Aug. 2017. doi: 10.1109/TAC.2016.2638961.
+[2] P. Xu, "Embodied AI: Bridging Simulation and Reality in Robotics," Proceedings of the 4th International Symposium on Robotics, Artificial Intelligence and Information Engineering (RAIIE), 2025. doi:10.1109/RAIIE65740.2025.11140070
 
-[3] W. Huang et al., "Inner Monologue: Embodied Reasoning through Planning with Language Models," arXiv:2207.05608, 2022.
+[3] X. Zhou et al., "Large Language Models for Robotics: Opportunities and Challenges," arXiv:2308.14455, 2023.
 
-[4] A. Z. Ren et al., "Robots That Ask for Help: Uncertainty-Aligned LLM Planning," arXiv:2307.01928, 2023.
+[4] S. Basu, M. H. Kim, S. Tatlidil, T. Williams, S. Sloman, and R. I. Bahar, "Augmenting large language models with psychologically grounded models of causal reasoning for planning under uncertainty," *Frontiers in Artificial Intelligence*, vol. 8, Art. 1730614, Jan. 2026. doi: 10.3389/frai.2025.1730614.
 
-[5] Z. Ji et al., "Survey of Hallucination in Natural Language Generation," *ACM Computing Surveys*, vol. 55, no. 12, pp. 1–38, 2023. doi: 10.1145/3571730.
+[5] A. D. Ames, X. Xu, J. W. Grizzle, and P. Tabuada, "Control Barrier Function Based Quadratic Programs for Safety-Critical Systems," *IEEE Transactions on Automatic Control*, vol. 62, no. 8, pp. 3861–3876, Aug. 2017. doi: 10.1109/TAC.2016.2638961.
 
-[6] L. Huang et al., "A Survey on Hallucination in Large Language Models," arXiv:2311.05232, 2023.
+[6] W. Huang et al., "Inner Monologue: Embodied Reasoning through Planning with Language Models," arXiv preprint arXiv:2207.05608, 2022.
 
-[7] N. Shinn et al., "Reflexion: Language Agents with Iterative Design Learning," *NeurIPS*, vol. 36, 2023.
+[7] A. Z. Ren, B. Govil, T.-Y. Yang, K. Narasimhan, and A. Majumdar, "Robots That Ask for Help: Uncertainty-Aligned LLM Planning," arXiv preprint arXiv:2307.01928, 2023.
 
-[8] A. D. Ames et al., "Control Barrier Functions: Theory and Application," *Proc. IEEE ECC*, 2019. doi: 10.23919/ECC.2019.8796030.
+[8] Z. Ji et al., "Survey of Hallucination in Natural Language Generation," *ACM Computing Surveys*, vol. 55, no. 12, pp. 1–38, 2023. doi: 10.1145/3571730.
 
-[9] R. Cheng et al., "Safe Control with Learned Models: Optimality and Runtime Guarantees," *IEEE Transactions on Automatic Control*, 2023. doi: 10.1109/TAC.2023.3247173.
+[9] L. Huang et al., "A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions," arXiv preprint arXiv:2311.05232, 2023.
 
-[10] S. Gu et al., "Safe Multi-Agent Reinforcement Learning for Climbing Robots in Uncertain Environments," *Journal of Intelligent & Robotic Systems*, vol. 110, 2024.
+[10] N. Shinn, F. Cassano, A. Gopinath, K. Narasimhan, and S. Yao, "Reflexion: Language Agents with Iterative Design Learning," in *Advances in Neural Information Processing Systems (NeurIPS)*, vol. 36, 2023.
 
-[11] H. K. Khalil, *Nonlinear Systems*, 3rd ed. Prentice Hall, 2002.
+[11] A. D. Ames, S. Coogan, M. Egerstedt, G. Notomista, K. Sreenath, and P. Tabuada, "Control Barrier Functions: Theory and Application," in *Proc. IEEE 18th European Control Conference (ECC)*, Naples, Italy, 2019, pp. 3420–3431. doi: 10.23919/ECC.2019.8796030.
 
-[12] J.-J. E. Slotine and W. Li, *Applied Nonlinear Control*. Prentice Hall, 1991.
+[12] R. Cheng, G. Orosz, R. M. Murray, and J. W. Burdick, "Safe Control with Learned Models: Optimality and Runtime Guarantees," *IEEE Transactions on Automatic Control*, 2023. doi: 10.1109/TAC.2023.3247173.
 
-[13] E. D. Sontag, "Input-to-State Stability: Basic Concepts and Results," in *Nonlinear Dynamics and Operational Control*, Springer, 1989.
+[13] S. Gu, J. Grudzien Kuba, Y. Chen, Y. Du, L. Yang, A. Knoll, and Y. Yang, "Safe multi-agent reinforcement learning for multi-robot control," *Artificial Intelligence*, vol. 319, 103905, 2023. doi:10.1016/j.artint.2023.103905.
 
-[14] Y. Tassa et al., "dm_control: Software and Tasks for Continuous Control," arXiv:1801.00690, 2018.
+[14] H. K. Khalil, *Nonlinear Systems*, 3rd ed. Upper Saddle River, NJ, USA: Prentice Hall, 2002.
 
-[15] P. Lewis et al., "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks," *NeurIPS*, 2020.
+[15] J.-J. E. Slotine and W. Li, *Applied Nonlinear Control*. Englewood Cliffs, NJ, USA: Prentice Hall, 1991.
+
+[16] E. D. Sontag, "Input-to-State Stability: Basic Concepts and Results," in *Nonlinear Dynamics and Operational Control*, P. Nistri and G. Stefani, Eds. Berlin, Germany: Springer, 1989, pp. 163–220. doi:10.1007/978-3-540-79026-86.
+
+[17] Y. Tassa, Y. Doron, A. Muldal, T. Erez, Y. Li, S. de Freitas, N. Heess, and M. Riedmiller, "dm_control: Software and Tasks for Continuous Control," arXiv:1801.00690, 2018. doi:10.48550/arXiv.1801.00690.
+
+[18] P. Lewis, E. Perez, A. Piktus, F. Petroni, V. Karpukhin, N. Goyal, H. Küttler, M. Lewis, W. Yih, T. Rocktäschel, S. Riedel, and D. Kiela, "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks," *Advances in Neural Information Processing Systems (NeurIPS)*, 2020. doi:10.48550/arXiv.2005.11401.
+
+[19] J. Liang, W. Huang, F. Xia, P. Florence, A. Zeng, "Code as Policies: Language Model Programs for Embodied Control," in *Proc. IEEE International Conference on Robotics and Automation (ICRA)*, 2023. doi:10.1109/ICRA48891.2023.10160591.
+
+[20] A. Brohan, N. Brown, B. Zitkovich et al., "RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control," arXiv:2307.15818, 2023. doi:10.48550/arXiv.2307.15818
