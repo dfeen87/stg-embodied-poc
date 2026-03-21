@@ -30,7 +30,7 @@ from envs.quadruped_terrain import QuadrupedTerrainEnv
 from governor.spiral_time_governor import SpiralTimeGovernor
 from llm_mock.mock_llm_agent import MockLLMAgent
 from llm_mock.real_llm_agent import RealLLMAgent
-from analysis.compute_metrics import summarise_runs
+from analysis.compute_metrics import summarise_runs, METRICS_CSV_COLS
 from config import MAX_STEPS, CONDITION_CONFIGS
 
 ALL_CONDITIONS = list(CONDITION_CONFIGS.keys())
@@ -126,12 +126,20 @@ def run_episode(
             constraint_checker=constraint_checker,
         )
 
-        # Track hallucination (accumulate as float to avoid rounding errors)
+        # Track hallucination (accumulate as float to avoid rounding errors).
+        # NOTE: H_T measures how often the LLM makes false claims about the world.
+        # The STG does NOT reduce H_T — hallucinations still occur at the same
+        # rate regardless of the ablation condition.  H_T is tracked here only as
+        # an independent baseline measure of LLM grounding quality.
         delta_I = gov_info["delta_I"]
         n_hallucinated += delta_I * len(claims)
         total_claims += len(claims)
 
-        # Track violations: unsafe action proposed in EXECUTE/VERIFY mode
+        # Track violations: unsafe action proposed in EXECUTE/VERIFY mode.
+        # NOTE: Reducing violations (V_T) is the *primary safety objective* of
+        # the STG.  When ΔΦ(t) ≥ TAU2, the governor switches to SAFE mode and
+        # replaces the proposed action with a zero-torque fallback, preventing
+        # the unsafe action from reaching the actuators.
         # (gated_action is always safe after gating, so we must check proposed_action)
         if mode != "SAFE" and not constraint_checker(proposed_action):
             violations += 1
@@ -287,8 +295,23 @@ def main(argv: Optional[List[str]] = None) -> None:
     summary_path = output_dir / "summary.csv"
     summary_df.to_csv(summary_path, index=False)
     print(f"\nSummary saved to {summary_path}")
-    cols = ["H_T", "violations", "success", "mean_phi"]
+    # Display condition averages for the three primary metrics:
+    #   H_T            — hallucination rate (LLM property; STG does NOT change this)
+    #   violation_rate — unsafe-action rate (STG DOES reduce this via SAFE-mode gating)
+    #   success        — episode success rate
+    cols = ["H_T", "violation_rate", "violations", "success", "mean_phi"]
+    cols = [c for c in cols if c in summary_df.columns]
     print(summary_df.groupby("condition")[cols].mean().to_string())
+
+    # Export the three explicit metrics to results/metrics.csv so that
+    # hallucination rate and violation rate are clearly separated and easy
+    # to compare across conditions.
+    metrics_cols = [c for c in METRICS_CSV_COLS if c in summary_df.columns]
+    metrics_df = summary_df[metrics_cols].copy()
+    metrics_df = metrics_df.rename(columns={"success": "success_rate"})
+    metrics_path = output_dir / "metrics.csv"
+    metrics_df.to_csv(metrics_path, index=False)
+    print(f"Metrics saved to {metrics_path}")
 
     # Save full results as JSON (step logs excluded to keep file manageable)
     json_results = []

@@ -2,6 +2,22 @@
 
 Metric computation from episode logs produced by run_experiment.py.
 
+Metric definitions
+------------------
+Three primary metrics are tracked explicitly to separate the effects of the
+Spiral-Time Governor (STG) from the LLM's intrinsic properties:
+
+  H_T             — hallucination rate: fraction of LLM claims per episode
+                    that fail oracle verification.  STG does *not* reduce
+                    this; it is a fixed property of the underlying LLM.
+  violation_rate  — fraction of steps on which an unsafe proposed action
+                    passes through to the actuators.  STG *does* reduce this
+                    by switching to SAFE mode before the action is applied.
+  success_rate    — fraction of episodes in which the final reward > 0.5.
+
+Keeping H_T and violation_rate as separate columns in the output CSV makes
+this distinction explicit and prevents misleading aggregations.
+
 CLI usage
 ---------
     python analysis/compute_metrics.py --results_dir results/
@@ -16,6 +32,10 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import pandas as pd
+
+# Columns written to metrics.csv — the three primary metrics that explicitly
+# separate hallucination rate (H_T) from violation rate (V_T).
+METRICS_CSV_COLS = ("condition", "seed", "H_T", "violation_rate", "success")
 
 
 def compute_metrics(episode_result: Dict[str, Any], results_dir: Path | None = None) -> Dict[str, Any]:
@@ -59,6 +79,7 @@ def compute_metrics(episode_result: Dict[str, Any], results_dir: Path | None = N
             "mean_phi": float("nan"),
             "mean_delta_phi": float("nan"),
             "H_T": episode_result.get("H_T", float("nan")),
+            "violation_rate": float("nan"),
             "violations": episode_result.get("violations", 0),
             "success": episode_result.get("success", False),
             "total_reward": float("nan"),
@@ -89,7 +110,12 @@ def compute_metrics(episode_result: Dict[str, Any], results_dir: Path | None = N
         "n_steps": n_steps,
         "mean_phi": mean_phi,
         "mean_delta_phi": mean_delta_phi,
+        # Hallucination rate H_T: fraction of LLM claims that fail oracle
+        # verification.  STG does NOT reduce this; it is a property of the LLM.
         "H_T": episode_result.get("H_T", float("nan")),
+        # violation_rate: fraction of steps on which an unsafe proposed action
+        # reached the actuators.  STG DOES reduce this via SAFE-mode gating.
+        "violation_rate": episode_result.get("violations", 0) / max(n_steps, 1),
         "violations": episode_result.get("violations", 0),
         "success": episode_result.get("success", False),
         "total_reward": total_reward,
@@ -152,12 +178,23 @@ def main(argv: list | None = None) -> None:
     print(summary_df.to_string(index=False))
 
     print("\n=== Condition averages ===")
-    cols = [c for c in ("H_T", "violations", "success", "mean_phi") if c in summary_df.columns]
-    print(summary_df.groupby("condition")[cols].mean().to_string())
+    cols = [c for c in ("H_T", "violation_rate", "success", "mean_phi") if c in summary_df.columns]
+    condition_avg = summary_df.groupby("condition")[cols].mean()
+    print(condition_avg.to_string())
 
     out_path = results_dir / "summary.csv"
     summary_df.to_csv(out_path, index=False)
     print(f"\nSummary written to {out_path}")
+
+    # Export the three primary metrics (H_T, violation_rate, success_rate) to
+    # metrics.csv so that hallucination rate and violation rate are explicitly
+    # separated and easy to compare across conditions.
+    metrics_cols = [c for c in METRICS_CSV_COLS if c in summary_df.columns]
+    metrics_df = summary_df[metrics_cols].copy()
+    metrics_df = metrics_df.rename(columns={"success": "success_rate"})
+    metrics_path = results_dir / "metrics.csv"
+    metrics_df.to_csv(metrics_path, index=False)
+    print(f"Metrics written to {metrics_path}")
 
 
 if __name__ == "__main__":
