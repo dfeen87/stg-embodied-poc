@@ -170,6 +170,8 @@ class SpiralTimeGovernor:
         - ``"none"``           → full governor (default)
         - ``"no_delta"``       → δ=0 (torsion term disabled, Ablation A)
         - ``"always_execute"`` → bypass all gating (Ablation B / Baseline)
+        - ``"remove_I"``       → ΔI=0 in ΔΦ (information component removed)
+        - ``"remove_C"``       → ΔC=0 in ΔΦ (coherence component removed)
     alpha : float, optional
         Override for the ΔR weight α in ΔΦ.  Defaults to the module-level
         ``ALPHA`` constant.
@@ -194,15 +196,16 @@ class SpiralTimeGovernor:
         Parameters
         ----------
         ablation:
-            One of ``"none"``, ``"no_delta"``, ``"always_execute"``.
+            One of ``"none"``, ``"no_delta"``, ``"always_execute"``,
+            ``"remove_I"``, ``"remove_C"``.
         alpha, beta, gamma, delta:
             Optional per-instance overrides for the ΔΦ instability weights.
             When ``None`` (default) the module-level constants are used.
         """
-        if ablation not in ("none", "no_delta", "always_execute"):
+        if ablation not in ("none", "no_delta", "always_execute", "remove_I", "remove_C"):
             raise ValueError(
                 f"Unknown ablation '{ablation}'. "
-                "Choose from: 'none', 'no_delta', 'always_execute'."
+                "Choose from: 'none', 'no_delta', 'always_execute', 'remove_I', 'remove_C'."
             )
         self.ablation = ablation
         self._alpha: float = ALPHA if alpha is None else float(alpha)
@@ -283,9 +286,12 @@ class SpiralTimeGovernor:
         chi = phi - self._phi_prev
 
         # Instability functional ΔΦ(t)
+        # For component-removal ablations, zero out the specified component.
         effective_delta = self._delta if self.ablation != "no_delta" else 0.0
+        effective_delta_I = 0.0 if self.ablation == "remove_I" else delta_I
+        effective_delta_C = 0.0 if self.ablation == "remove_C" else delta_C
         delta_phi = float(np.clip(
-            self._alpha * delta_R + self._beta * delta_I + self._gamma * delta_C + effective_delta * abs(chi),
+            self._alpha * delta_R + self._beta * effective_delta_I + self._gamma * effective_delta_C + effective_delta * abs(chi),
             0.0, 1.0,
         ))
 

@@ -134,7 +134,7 @@ class TestGovernorInit:
             SpiralTimeGovernor(ablation="invalid")
 
     def test_valid_ablations(self):
-        for abl in ("none", "no_delta", "always_execute"):
+        for abl in ("none", "no_delta", "always_execute", "remove_I", "remove_C"):
             g = SpiralTimeGovernor(ablation=abl)
             assert g.ablation == abl
 
@@ -288,6 +288,77 @@ class TestAblations:
 
     def test_delta_phi_in_range(self):
         g = SpiralTimeGovernor()
+        for _ in range(10):
+            g.step(["feasible"], _ACTION, _DUMMY_ORACLE, _always_ok)
+        for entry in g.log:
+            assert 0.0 <= entry["delta_phi"] <= 1.0
+
+    def test_remove_I_zeroes_delta_I_contribution(self):
+        """remove_I ablation: ΔI is excluded from ΔΦ computation."""
+        # Use an oracle that causes hallucinations (delta_I > 0)
+        oracle = dict(_DUMMY_ORACLE, feasible=False, n_contacts=0, torso_upright=0.1)
+        claims = ["feasible", "grounded", "upright"]  # all will fail → delta_I = 1.0
+
+        g_full = SpiralTimeGovernor(ablation="none")
+        _, _, info_full = g_full.step(claims, _ACTION, oracle, _always_ok)
+
+        g_ri = SpiralTimeGovernor(ablation="remove_I")
+        _, _, info_ri = g_ri.step(claims, _ACTION, oracle, _always_ok)
+
+        # delta_I is still recorded (for logging), but excluded from delta_phi
+        assert info_ri["delta_I"] > 0.0, "delta_I should still be computed for logging"
+        # Without the beta*delta_I term, delta_phi must be lower than full governor
+        assert info_ri["delta_phi"] < info_full["delta_phi"]
+
+    def test_remove_C_zeroes_delta_C_contribution(self):
+        """remove_C ablation: ΔC is excluded from ΔΦ computation."""
+        oracle = dict(_DUMMY_ORACLE, feasible=True, torso_upright=0.9)
+        claims = ["feasible"]
+
+        # Run several steps to build up coherence history (so delta_C becomes non-zero)
+        g_full = SpiralTimeGovernor(ablation="none")
+        g_rc = SpiralTimeGovernor(ablation="remove_C")
+        oracle2 = dict(_DUMMY_ORACLE, feasible=False, n_contacts=0, torso_upright=0.1)
+        for _ in range(3):
+            g_full.step(claims, _ACTION, oracle, _always_ok)
+            g_rc.step(claims, _ACTION, oracle, _always_ok)
+        # Trigger a coherence shift
+        g_full.step(claims, _ACTION, oracle2, _always_ok)
+        g_rc.step(claims, _ACTION, oracle2, _always_ok)
+
+        # Find a step where delta_C is non-zero in the full governor
+        delta_C_values = [e["delta_C"] for e in g_full.log]
+        if any(dc > 0 for dc in delta_C_values):
+            # At least one step has non-zero delta_C; verify remove_C differs from full
+            for i, (e_full, e_rc) in enumerate(zip(g_full.log, g_rc.log)):
+                if e_full["delta_C"] > 0:
+                    assert e_rc["delta_phi"] < e_full["delta_phi"], (
+                        f"step {i}: remove_C should give lower delta_phi when delta_C>0"
+                    )
+                    break
+
+    def test_remove_I_valid_ablation(self):
+        g = SpiralTimeGovernor(ablation="remove_I")
+        assert g.ablation == "remove_I"
+
+    def test_remove_C_valid_ablation(self):
+        g = SpiralTimeGovernor(ablation="remove_C")
+        assert g.ablation == "remove_C"
+
+    def test_invalid_ablation_still_raises(self):
+        with pytest.raises(ValueError, match="remove_R"):
+            SpiralTimeGovernor(ablation="remove_R")
+
+    def test_remove_I_delta_phi_in_range(self):
+        g = SpiralTimeGovernor(ablation="remove_I")
+        oracle = dict(_DUMMY_ORACLE, feasible=False, n_contacts=0, torso_upright=0.1)
+        for _ in range(10):
+            g.step(["feasible"], _ACTION, oracle, _always_ok)
+        for entry in g.log:
+            assert 0.0 <= entry["delta_phi"] <= 1.0
+
+    def test_remove_C_delta_phi_in_range(self):
+        g = SpiralTimeGovernor(ablation="remove_C")
         for _ in range(10):
             g.step(["feasible"], _ACTION, _DUMMY_ORACLE, _always_ok)
         for entry in g.log:

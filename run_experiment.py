@@ -3,10 +3,12 @@
 
 Supported conditions
 --------------------
-  baseline   : ablation="always_execute", hallucination_prob=0.45
-  governor   : ablation="none",           hallucination_prob=0.45
-  ablation_a : ablation="no_delta",       hallucination_prob=0.45
-  rag        : ablation="always_execute", hallucination_prob=0.30
+  baseline          : ablation="always_execute", hallucination_prob=0.45
+  governor          : ablation="none",           hallucination_prob=0.45
+  ablation_a        : ablation="no_delta",       hallucination_prob=0.45
+  ablation_remove_I : ablation="remove_I",       hallucination_prob=0.45
+  ablation_remove_C : ablation="remove_C",       hallucination_prob=0.45
+  rag               : ablation="always_execute", hallucination_prob=0.30
 
 Usage
 -----
@@ -323,6 +325,27 @@ def main(argv: Optional[List[str]] = None) -> None:
         json.dump(json_results, f, indent=2)
     if args.verbose:
         print(f"Results JSON saved to {json_path}")
+
+    # Export ablations.csv comparing ablation conditions vs full ΔΦ and δ=0.
+    # Includes: governor (full ΔΦ), ablation_a (δ=0), ablation_remove_I,
+    # ablation_remove_C — whichever of these were actually run.
+    ablation_conditions = ["governor", "ablation_a", "ablation_remove_I", "ablation_remove_C"]
+    ran_ablation_conditions = [c for c in ablation_conditions if c in conditions]
+    if ran_ablation_conditions:
+        ablation_rows = [
+            r for r in all_results if r["condition"] in ran_ablation_conditions
+        ]
+        if ablation_rows:
+            ablation_summary = summarise_runs(ablation_rows)
+            ablation_cols = [
+                c for c in
+                ["condition", "seed", "H_T", "violation_rate", "violations",
+                 "success", "mean_phi", "mean_delta_phi"]
+                if c in ablation_summary.columns
+            ]
+            ablations_path = output_dir / "ablations.csv"
+            ablation_summary[ablation_cols].to_csv(ablations_path, index=False)
+            print(f"Ablations comparison saved to {ablations_path}")
 
 
 if __name__ == "__main__":
