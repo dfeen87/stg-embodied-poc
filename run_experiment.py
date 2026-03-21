@@ -29,6 +29,7 @@ from tqdm import tqdm
 from envs.quadruped_terrain import QuadrupedTerrainEnv
 from governor.spiral_time_governor import SpiralTimeGovernor
 from llm_mock.mock_llm_agent import MockLLMAgent
+from llm_mock.real_llm_agent import RealLLMAgent
 from analysis.compute_metrics import summarise_runs
 from config import MAX_STEPS, CONDITION_CONFIGS
 
@@ -64,6 +65,7 @@ def run_episode(
     seed: int,
     n_claims: int = 3,
     verbose: bool = False,
+    use_real_llm: bool = False,
 ) -> Dict[str, Any]:
     """Run a single episode for the given condition and seed.
 
@@ -77,6 +79,10 @@ def run_episode(
         Number of LLM claims per step.
     verbose:
         If ``True``, print per-step information.
+    use_real_llm:
+        If ``True``, use ``RealLLMAgent`` (real OpenAI API) instead of
+        ``MockLLMAgent``.  Requires the ``OPENAI_API_KEY`` environment
+        variable and the ``openai`` package.
 
     Returns
     -------
@@ -86,11 +92,17 @@ def run_episode(
     cfg = CONDITION_CONFIGS[condition]
 
     env = QuadrupedTerrainEnv(seed=seed)
-    agent = MockLLMAgent(
-        seed=seed,
-        hallucination_prob=cfg["hallucination_prob"],
-        action_dim=env.action_dim,
-    )
+    if use_real_llm:
+        agent: MockLLMAgent | RealLLMAgent = RealLLMAgent(
+            seed=seed,
+            action_dim=env.action_dim,
+        )
+    else:
+        agent = MockLLMAgent(
+            seed=seed,
+            hallucination_prob=cfg["hallucination_prob"],
+            action_dim=env.action_dim,
+        )
     governor = SpiralTimeGovernor(ablation=cfg["ablation"])
 
     obs = env.reset()
@@ -132,6 +144,17 @@ def run_episode(
             "reward": reward,
             "oracle": oracle_state,
         }
+        if use_real_llm:
+            # Log the extra detail that real-LLM runs produce:
+            # raw claims from the model, action norm, and per-claim oracle
+            # verification results (derived from delta_I already in gov_info).
+            log_entry["real_llm_claims"] = claims
+            log_entry["proposed_action_norm"] = float(
+                np.linalg.norm(proposed_action)
+            )
+            log_entry["oracle_verified_claim_count"] = int(
+                round((1.0 - delta_I) * len(claims))
+            )
         step_logs.append(log_entry)
 
         if verbose:
@@ -204,6 +227,16 @@ def main(argv: Optional[List[str]] = None) -> None:
         action="store_true",
         help="Verbose per-step output",
     )
+    parser.add_argument(
+        "--use-real-llm",
+        action="store_true",
+        dest="use_real_llm",
+        help=(
+            "Use RealLLMAgent (real OpenAI API) instead of MockLLMAgent. "
+            "Requires the OPENAI_API_KEY environment variable and the "
+            "'openai' package."
+        ),
+    )
     args = parser.parse_args(argv)
 
     # Resolve conditions
@@ -231,6 +264,7 @@ def main(argv: Optional[List[str]] = None) -> None:
             seed=seed,
             n_claims=args.n_claims,
             verbose=args.verbose,
+            use_real_llm=args.use_real_llm,
         )
         all_results.append(result)
 
