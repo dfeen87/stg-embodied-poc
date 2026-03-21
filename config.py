@@ -44,6 +44,11 @@ __all__ = [
     "DEFAULT_SEEDS",
     "INITIAL_PHI",
     "CONDITION_CONFIGS",
+    # Oracle noise flags
+    "ORACLE_POSITION_NOISE_SCALE",
+    "ORACLE_CONTACT_NOISE_PROB",
+    "ORACLE_DELAY_STEPS",
+    "ORACLE_MISCLASSIFICATION_PROB",
 ]
 
 # ---------------------------------------------------------------------------
@@ -96,4 +101,34 @@ Experimental conditions.
 Each entry maps a condition name to the kwargs passed to
 ``SpiralTimeGovernor`` (``ablation``) and ``MockLLMAgent``
 (``hallucination_prob``).
+"""
+
+# ---------------------------------------------------------------------------
+# Oracle noise configuration
+# ---------------------------------------------------------------------------
+
+ORACLE_POSITION_NOISE_SCALE: float = 0.0
+"""Standard deviation of Gaussian noise added to torso position (x, y, z).
+
+Set to ``0.0`` to disable.  A typical small value is ``0.05`` (5 cm std dev).
+"""
+
+ORACLE_CONTACT_NOISE_PROB: float = 0.0
+"""Per-flag probability of flipping each boolean contact observation.
+
+Set to ``0.0`` to disable.  A typical small value is ``0.05`` (5 % flip rate).
+"""
+
+ORACLE_DELAY_STEPS: int = 0
+"""Number of steps by which oracle observations are delayed (0, 1, or 2).
+
+Set to ``0`` to disable delay.  When > 0 the oracle returns the state from
+``ORACLE_DELAY_STEPS`` timesteps ago; the most-recent real state is used until
+the buffer has been filled.
+"""
+
+ORACLE_MISCLASSIFICATION_PROB: float = 0.0
+"""Probability of returning a randomly wrong terrain class from the oracle.
+
+Set to ``0.0`` to disable.  A typical small value is ``0.05`` (5 % error rate).
 """

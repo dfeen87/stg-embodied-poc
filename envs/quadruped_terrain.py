@@ -11,7 +11,8 @@ Uses:
 
 from __future__ import annotations
 
-from typing import Dict, List, Tuple
+from collections import deque
+from typing import Deque, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -21,7 +22,13 @@ try:
 except (ImportError, AttributeError, RuntimeError):  # pragma: no cover
     _DM_CONTROL_AVAILABLE = False
 
-from config import MAX_STEPS as _MAX_STEPS
+from config import (
+    MAX_STEPS as _MAX_STEPS,
+    ORACLE_POSITION_NOISE_SCALE,
+    ORACLE_CONTACT_NOISE_PROB,
+    ORACLE_DELAY_STEPS,
+    ORACLE_MISCLASSIFICATION_PROB,
+)
 
 # Terrain classification thresholds (torso x position)
 _TERRAIN_FLAT_MAX: float = 2.0    # x < 2.0  → class 0 (flat)
@@ -61,9 +68,32 @@ class QuadrupedTerrainEnv:
         Random seed for the environment and observation noise.
     noise_scale : float
         Standard deviation of Gaussian noise added to observations.
+    oracle_pos_noise_scale : float
+        Standard deviation of Gaussian noise added to the torso position
+        returned by :meth:`oracle`.  Defaults to
+        ``config.ORACLE_POSITION_NOISE_SCALE`` (0.0 = disabled).
+    oracle_contact_noise_prob : float
+        Per-flag probability of flipping each boolean contact observation in
+        :meth:`oracle`.  Defaults to ``config.ORACLE_CONTACT_NOISE_PROB``
+        (0.0 = disabled).
+    oracle_delay_steps : int
+        Number of timesteps by which oracle observations are delayed (0, 1,
+        or 2).  Defaults to ``config.ORACLE_DELAY_STEPS`` (0 = disabled).
+    oracle_misclassification_prob : float
+        Probability of returning a randomly wrong terrain class from
+        :meth:`oracle`.  Defaults to ``config.ORACLE_MISCLASSIFICATION_PROB``
+        (0.0 = disabled).
     """
 
-    def __init__(self, seed: int, noise_scale: float = 0.01) -> None:
+    def __init__(
+        self,
+        seed: int,
+        noise_scale: float = 0.01,
+        oracle_pos_noise_scale: float = ORACLE_POSITION_NOISE_SCALE,
+        oracle_contact_noise_prob: float = ORACLE_CONTACT_NOISE_PROB,
+        oracle_delay_steps: int = ORACLE_DELAY_STEPS,
+        oracle_misclassification_prob: float = ORACLE_MISCLASSIFICATION_PROB,
+    ) -> None:
         """Initialise the environment.
 
         Parameters
@@ -72,6 +102,14 @@ class QuadrupedTerrainEnv:
             Random seed passed to dm_control task and numpy RNG.
         noise_scale:
             Gaussian noise added to flattened observations.
+        oracle_pos_noise_scale:
+            Std dev of Gaussian noise on torso position in oracle output.
+        oracle_contact_noise_prob:
+            Per-flag probability of flipping contact booleans in oracle output.
+        oracle_delay_steps:
+            Delay the oracle output by this many steps (0–2).
+        oracle_misclassification_prob:
+            Probability of returning a wrong terrain class from oracle.
         """
         if not _DM_CONTROL_AVAILABLE:
             raise ImportError(
@@ -79,6 +117,10 @@ class QuadrupedTerrainEnv:
             )
         self._seed = seed
         self._noise_scale = noise_scale
+        self._oracle_pos_noise_scale = float(oracle_pos_noise_scale)
+        self._oracle_contact_noise_prob = float(oracle_contact_noise_prob)
+        self._oracle_delay_steps = max(0, int(oracle_delay_steps))
+        self._oracle_misclassification_prob = float(oracle_misclassification_prob)
         self._rng = np.random.default_rng(seed)
         self._env = suite.load(
             domain_name="quadruped",
@@ -87,6 +129,15 @@ class QuadrupedTerrainEnv:
         )
         self._step_count: int = 0
         self._last_time_step = None
+
+        # Delay buffer: holds up to oracle_delay_steps+1 states so that the
+        # oldest entry in a full buffer is exactly oracle_delay_steps steps old.
+        # When delay is disabled (0) we skip the buffer entirely.
+        self._oracle_buffer: Deque[Dict] = (
+            deque(maxlen=self._oracle_delay_steps + 1)
+            if self._oracle_delay_steps > 0
+            else deque()
+        )
 
         # Cache spec info
         action_spec = self._env.action_spec()
@@ -126,6 +177,7 @@ class QuadrupedTerrainEnv:
         """
         self._rng = np.random.default_rng(self._seed)
         self._step_count = 0
+        self._oracle_buffer.clear()
         time_step = self._env.reset()
         self._last_time_step = time_step
         return self._obs_with_noise(time_step.observation)
@@ -169,6 +221,24 @@ class QuadrupedTerrainEnv:
     def oracle(self, t: int) -> Dict:
         """Return ground-truth predicates for the governor's ΔI computation.
 
+        Applies controlled observation noise according to the parameters set
+        at construction time (or their defaults from ``config``):
+
+        * **Gaussian position noise** – zero-mean noise with std dev
+          ``oracle_pos_noise_scale`` is added to each component of
+          ``torso_pos``.
+        * **Contact flip noise** – each contact boolean is independently
+          flipped with probability ``oracle_contact_noise_prob``.
+        * **Observation delay** – when ``oracle_delay_steps > 0`` the method
+          returns the oracle state from that many steps ago; the current
+          (noisy) state is always buffered first.
+        * **Terrain misclassification** – with probability
+          ``oracle_misclassification_prob`` the ``terrain_class`` field is
+          replaced by a uniformly-random class different from the true one.
+
+        Both the *baseline* and the *governor* conditions call this method on
+        the same environment instance, so they observe identical noisy data.
+
         Parameters
         ----------
         t:
@@ -196,12 +266,32 @@ class QuadrupedTerrainEnv:
 
         # Per-foot contact detection
         contact_flags = self._detect_foot_contacts(physics)
-        n_contacts = int(sum(contact_flags))
 
+        # --- Apply position noise ---
+        if self._oracle_pos_noise_scale > 0.0:
+            torso_pos = [
+                v + float(self._rng.normal(0.0, self._oracle_pos_noise_scale))
+                for v in torso_pos
+            ]
+
+        # --- Apply contact flip noise ---
+        if self._oracle_contact_noise_prob > 0.0:
+            contact_flags = [
+                (not flag) if self._rng.random() < self._oracle_contact_noise_prob else flag
+                for flag in contact_flags
+            ]
+
+        n_contacts = int(sum(contact_flags))
         feasible = bool(torso_upright > 0.5 and n_contacts >= 2)
         terrain_class = _classify_terrain(torso_pos[0])
 
-        return {
+        # --- Apply terrain misclassification ---
+        if self._oracle_misclassification_prob > 0.0:
+            if self._rng.random() < self._oracle_misclassification_prob:
+                other_classes = [c for c in (0, 1, 2) if c != terrain_class]
+                terrain_class = int(self._rng.choice(other_classes))
+
+        state: Dict = {
             "t": t,
             "torso_pos": torso_pos,
             "torso_upright": torso_upright,
@@ -210,6 +300,20 @@ class QuadrupedTerrainEnv:
             "feasible": feasible,
             "terrain_class": terrain_class,
         }
+
+        # --- Apply observation delay ---
+        if self._oracle_delay_steps > 0:
+            self._oracle_buffer.append(state)
+            if len(self._oracle_buffer) > self._oracle_delay_steps:
+                # Buffer is full: oldest entry is exactly oracle_delay_steps old.
+                delayed = self._oracle_buffer[0]
+                # Keep the current timestep index so callers can still
+                # correlate oracle output with the environment step.
+                return {**delayed, "t": t}
+            # Buffer not yet full: return current state (no delay available yet).
+            return state
+
+        return state
 
     def action_spec(self) -> Tuple[np.ndarray, np.ndarray]:
         """Return action bounds.
