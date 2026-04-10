@@ -2,7 +2,7 @@
 
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 ![MuJoCo 3.x](https://img.shields.io/badge/MuJoCo-3.x-green)
-![License MIT](https://img.shields.io/badge/license-MIT-lightgrey)
+![License Non-Commercial](https://img.shields.io/badge/license-Non--Commercial-lightgrey)
 [![CI](https://github.com/dfeen87/stg-embodied-poc/actions/workflows/ci.yml/badge.svg)](https://github.com/dfeen87/stg-embodied-poc/actions/workflows/ci.yml)
 
 
@@ -65,7 +65,7 @@ This script reads the embedded simulation data and writes all eight figures (`fi
 ```
 stg-embodied-poc/
 ├── README.md
-├── LICENSE                     # MIT
+├── LICENSE                     # Non-Commercial
 ├── PAPER.md                    # Companion paper (manuscript)
 ├── VALIDATION_ANALYSIS.md      # Detailed validation results and statistical analysis
 ├── CITATION.cff                # Citation metadata for the companion paper
@@ -224,7 +224,7 @@ If you use this code, please cite the companion paper (placeholder — update wh
 ```
 ---
 
-MIT License - see [`LICENSE`](LICENSE) file.
+Non-Commercial License - see [`LICENSE`](LICENSE) file.
 
 ---
 
