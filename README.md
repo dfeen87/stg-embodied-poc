@@ -1,4 +1,4 @@
-# stg-mujoco-poc
+# stg-embodied-poc
 
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 ![MuJoCo 3.x](https://img.shields.io/badge/MuJoCo-3.x-green)
@@ -99,7 +99,11 @@ stg-embodied-poc/
 │   ├── fig7_performance_overhead.png
 │   └── fig8_robustness_summary.png
 ├── run_experiment.py           # Main experiment runner (CLI)
+├── run_replay.py               # CLI for the counterfactual replay system
 ├── run_sensitivity_sweep.py    # One-at-a-time sensitivity sweep over ΔΦ weights (α, β, γ, δ)
+├── replay/
+│   ├── __init__.py
+│   └── counterfactual_replay.py  # Deterministic record-then-replay comparison (raw vs. STG-filtered)
 ├── scripts/
 │   ├── run_all.sh              # Full pipeline (all conditions, seeds 0–9)
 │   └── run_robustness.sh       # Robustness check (governor, seeds 40–49)
@@ -107,12 +111,14 @@ stg-embodied-poc/
 │   ├── test_governor.py
 │   ├── test_env.py
 │   ├── test_real_llm_agent.py
+│   ├── test_replay.py
 │   └── test_sensitivity_sweep.py
 └── results/
     ├── .gitkeep
     ├── ablations.csv           # Per-condition ablation results
     ├── metrics.csv             # Aggregated metrics across seeds/conditions
-    └── sensitivity_delta_phi.csv  # Sensitivity sweep results for ΔΦ weights
+    ├── sensitivity_delta_phi.csv  # Sensitivity sweep results for ΔΦ weights
+    └── replay/                 # Per-seed counterfactual replay JSON outputs
 ```
 
 ---
