@@ -115,6 +115,75 @@ class GovernorState:
 
 
 # ---------------------------------------------------------------------------
+# Safety Filter Report dataclass
+# ---------------------------------------------------------------------------
+
+# Reason codes used in SafetyFilterReport.reason_codes
+_REASON_HIGH_INSTABILITY = "HIGH_INSTABILITY"         # ΔΦ ≥ TAU2 → SAFE mode
+_REASON_ELEVATED_INSTABILITY = "ELEVATED_INSTABILITY"  # TAU1 ≤ ΔΦ < TAU2 → VERIFY mode
+_REASON_CONSTRAINT_VIOLATION = "CONSTRAINT_VIOLATION"  # external constraint_checker failed
+_REASON_NORM_EXCEEDED = "NORM_EXCEEDED"                # action norm ≥ 10.0 (governor norm gate)
+_REASON_LOW_ORIENTATION = "LOW_ORIENTATION"            # torso_upright ≤ 0.5
+_REASON_INSUFFICIENT_CONTACTS = "INSUFFICIENT_CONTACTS"  # n_contacts < 2
+
+
+@dataclass
+class SafetyFilterReport:
+    """Structured safety filter report for a single governor timestep.
+
+    This report is attached to every per-step log entry produced by
+    :meth:`SpiralTimeGovernor.step`.  It captures *why* and *how much* the
+    governor intervened without touching the STG math.
+
+    Attributes
+    ----------
+    intervention_flag : bool
+        ``True`` if the governor replaced the proposed action with a different
+        (safe fallback) action, ``False`` if the proposed action was passed
+        through unchanged.
+    reason_codes : List[str]
+        Ordered list of string codes that explain the current safety state.
+        Possible values:
+
+        * ``"HIGH_INSTABILITY"``       — ΔΦ ≥ TAU2; governor in SAFE mode.
+        * ``"ELEVATED_INSTABILITY"``   — TAU1 ≤ ΔΦ < TAU2; governor in VERIFY mode.
+        * ``"CONSTRAINT_VIOLATION"``   — external ``constraint_checker`` returned False.
+        * ``"NORM_EXCEEDED"``          — ``‖action‖₂ ≥ 10.0`` (governor norm gate).
+        * ``"LOW_ORIENTATION"``        — ``torso_upright ≤ 0.5``.
+        * ``"INSUFFICIENT_CONTACTS"``  — fewer than 2 foot contacts detected.
+
+        Empty list when the step is fully safe (EXECUTE mode, no violations).
+    constraint_margins : Dict[str, float]
+        Signed margins for each monitored constraint.  Positive values indicate
+        a safe margin; negative values indicate the constraint is violated.
+
+        * ``"joint_limit"``      — ``10.0 − ‖proposed_action‖₂``  (governor norm gate).
+        * ``"torque"``           — ``+1.0`` if external constraint passes, ``−1.0`` if not.
+        * ``"orientation"``      — ``torso_upright − 0.5``  (upright threshold = 0.5).
+        * ``"contact_impulse"``  — ``n_contacts − 2.0``  (minimum contact threshold = 2).
+    clamped_action_delta : np.ndarray
+        Element-wise difference ``gated_action − proposed_action``.
+        Zero vector when no intervention occurred.  Note: this field is stored
+        as a plain Python list in the per-step log dict (via ``.tolist()``) to
+        ensure JSON-serialisability and pandas DataFrame compatibility.
+    mode : str
+        Governor mode at this step (``"EXECUTE"``, ``"VERIFY"``, or ``"SAFE"``).
+    phi : float
+        Coherence score φ(t) ∈ [0, 1].
+    delta_phi : float
+        Instability functional ΔΦ(t) ∈ [0, 1].
+    """
+
+    intervention_flag: bool
+    reason_codes: List[str]
+    constraint_margins: Dict[str, float]
+    clamped_action_delta: np.ndarray
+    mode: Mode
+    phi: float
+    delta_phi: float
+
+
+# ---------------------------------------------------------------------------
 # Verification helper
 # ---------------------------------------------------------------------------
 
@@ -237,7 +306,8 @@ class SpiralTimeGovernor:
         """Immutable view of the per-step log.
 
         Each entry is a dict with keys: t, phi, chi, delta_phi, mode,
-        delta_R, delta_I, delta_C.
+        delta_R, delta_I, delta_C, intervention_flag, reason_codes,
+        constraint_margins, clamped_action_delta.
         """
         return list(self._log)
 
@@ -308,12 +378,25 @@ class SpiralTimeGovernor:
         # Action gating
         gated_action = self._gate_action(proposed_action, mode, constraint_checker)
 
+        # Safety Filter Report — computed after gating, before state update
+        report = self._compute_safety_report(
+            proposed_action=proposed_action,
+            gated_action=gated_action,
+            mode=mode,
+            phi=phi,
+            delta_phi=delta_phi,
+            oracle_state=oracle_state,
+            constraint_checker=constraint_checker,
+        )
+
         # Update internal state
         self._phi_history.append(phi)
         self._phi_prev = phi
         self._t += 1
 
-        # Build info dict
+        # Build info dict — base STG fields plus Safety Filter Report fields.
+        # clamped_action_delta is stored as a plain list so the dict is
+        # JSON-serialisable and compatible with pandas DataFrames.
         info: Dict = {
             "t": t,
             "phi": phi,
@@ -323,6 +406,11 @@ class SpiralTimeGovernor:
             "delta_R": delta_R,
             "delta_I": delta_I,
             "delta_C": delta_C,
+            # Safety Filter Report fields
+            "intervention_flag": report.intervention_flag,
+            "reason_codes": report.reason_codes,
+            "constraint_margins": report.constraint_margins,
+            "clamped_action_delta": report.clamped_action_delta.tolist(),
         }
 
         # Append to immutable log
@@ -401,6 +489,88 @@ class SpiralTimeGovernor:
         window = self._phi_history[-MEMORY_WINDOW:]
         mean_phi = float(np.mean(window))
         return float(abs(self._phi_prev - mean_phi))
+
+    def _compute_safety_report(
+        self,
+        proposed_action: np.ndarray,
+        gated_action: np.ndarray,
+        mode: Mode,
+        phi: float,
+        delta_phi: float,
+        oracle_state: Dict,
+        constraint_checker: Callable[[np.ndarray], bool],
+    ) -> SafetyFilterReport:
+        """Build the :class:`SafetyFilterReport` for the current timestep.
+
+        This method is a pure reporter — it does **not** modify any STG state
+        or influence the gated action.
+
+        Parameters
+        ----------
+        proposed_action:
+            Raw action from the LLM agent.
+        gated_action:
+            Action after governor gating (may equal ``proposed_action``).
+        mode:
+            Governor mode already determined for this step.
+        phi:
+            Coherence score φ(t) already computed for this step.
+        delta_phi:
+            Instability functional ΔΦ(t) already computed for this step.
+        oracle_state:
+            Ground-truth dict from ``QuadrupedTerrainEnv.oracle()``.
+        constraint_checker:
+            Callable ``(action) → bool``; re-evaluated here to fill
+            ``constraint_margins["torque"]``.
+
+        Returns
+        -------
+        SafetyFilterReport
+        """
+        clamped_action_delta: np.ndarray = gated_action - proposed_action
+        intervention_flag: bool = bool(not np.array_equal(gated_action, proposed_action))
+
+        # --- Constraint margins (positive = safe, negative = violated) ---
+        action_norm = float(np.linalg.norm(proposed_action))
+        constraint_ok = constraint_checker(proposed_action)
+        torso_upright = float(oracle_state.get("torso_upright", 1.0))
+        n_contacts = int(oracle_state.get("n_contacts", 0))
+
+        constraint_margins: Dict[str, float] = {
+            # Governor internal norm gate (threshold = 10.0 in _compute_delta_R)
+            "joint_limit": 10.0 - action_norm,
+            # External constraint_checker result encoded as signed margin
+            "torque": 1.0 if constraint_ok else -1.0,
+            # Upright feasibility threshold from oracle (threshold = 0.5)
+            "orientation": torso_upright - 0.5,
+            # Foot-contact feasibility threshold from oracle (threshold = 2)
+            "contact_impulse": float(n_contacts) - 2.0,
+        }
+
+        # --- Reason codes (deterministic, ordered) ---
+        reason_codes: List[str] = []
+        if mode == "SAFE":
+            reason_codes.append(_REASON_HIGH_INSTABILITY)
+        elif mode == "VERIFY":
+            reason_codes.append(_REASON_ELEVATED_INSTABILITY)
+        if not constraint_ok:
+            reason_codes.append(_REASON_CONSTRAINT_VIOLATION)
+        if action_norm >= 10.0:
+            reason_codes.append(_REASON_NORM_EXCEEDED)
+        if torso_upright <= 0.5:
+            reason_codes.append(_REASON_LOW_ORIENTATION)
+        if n_contacts < 2:
+            reason_codes.append(_REASON_INSUFFICIENT_CONTACTS)
+
+        return SafetyFilterReport(
+            intervention_flag=intervention_flag,
+            reason_codes=reason_codes,
+            constraint_margins=constraint_margins,
+            clamped_action_delta=clamped_action_delta,
+            mode=mode,
+            phi=phi,
+            delta_phi=delta_phi,
+        )
 
     def _gate_action(
         self,
