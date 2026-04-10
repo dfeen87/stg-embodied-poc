@@ -20,6 +20,7 @@ try:
     from dm_control import suite
     _DM_CONTROL_AVAILABLE = True
 except (ImportError, AttributeError, RuntimeError):  # pragma: no cover
+    suite = None  # type: ignore[assignment]
     _DM_CONTROL_AVAILABLE = False
 
 from config import (

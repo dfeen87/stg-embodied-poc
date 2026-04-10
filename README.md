@@ -216,40 +216,7 @@ The following limitations are disclosed in the interest of academic transparency
 
 ---
 
-## Critique
-
-The following observations highlight areas for improvement that go beyond the limitations already disclosed above.
-
-### Code / Architecture
-
-- **Duplicated constraint checker.** The `_constraint_checker` function (‖action‖₂ < 8.0) is copy-pasted verbatim in both `run_experiment.py` and `replay/counterfactual_replay.py`.  It should live once in a shared module (e.g., `envs/` or a `utils.py`) and be imported in both places.
-
-- **Unused return value in `_record_phase`.** `_record_phase` returns `initial_obs`, but neither `_replay_track_a` nor `_replay_track_b` uses it — both call `env.reset()` independently.  The dead return value is misleading and should be removed.
-
-- **No `setup.py` / `pyproject.toml`.** The project is not installable as a package, which forces every import to rely on the working directory being the repo root.  Adding a minimal `pyproject.toml` would make dependency management and CI more robust.
-
-- **Single-process execution is not parallelised.** The README documents that "episodes are run sequentially; wall-clock time scales linearly."  Adding optional `multiprocessing` support (e.g., `--n_workers`) would make the sensitivity sweep and robustness checks significantly faster at no algorithmic cost.
-
-- **Hard-coded output filenames in `run_replay.py`.** The aggregate JSON is always written as `replay_aggregate_{condition}.json`; running the same condition twice silently overwrites it.  Using a timestamp suffix or `--force-overwrite` flag would be safer.
-
-### Repository Hygiene
-
-- **Committed result CSVs.** `results/ablations.csv`, `results/metrics.csv`, and `results/sensitivity_delta_phi.csv` are tracked by git.  For a reproducibility repo the canonical pattern is to `.gitignore` all generated files and let the reader regenerate them via the documented commands.  Committing results conflates source and artefact, and risks stale data if the code changes.
-
-- **Wrong repo name in README H1.** The heading previously read `stg-mujoco-poc` (the earlier working title) instead of `stg-embodied-poc` (the canonical repository name).  Fixed in this update.
-
-- **`results/replay/` not in the original tree.** The directory (and its `.gitkeep`) existed on disk but was absent from the documented tree.  Fixed in this update.
-
-- **`replay/` module and `run_replay.py` not in the original tree.** Both were present in the codebase but missing from the Directory Structure section.  Fixed in this update.
-
-### Testing
-
-- **No integration test for `run_replay.py`.** `test_replay.py` tests the library function `run_counterfactual_replay` directly, but the CLI entry-point (`main()`) has no automated coverage.  A smoke-test that exercises the CLI with `--seeds 0 --condition governor` would close this gap.
-
-- **CI does not run the sensitivity sweep test by default.**  `tests/test_sensitivity_sweep.py` exists but `ci.yml` should be inspected to confirm it is included in the test matrix; sweep tests can be slow and are sometimes accidentally excluded.
-
----
-
+## Citation
 
 If you use this code, please cite the companion paper (placeholder — update when published):
 
