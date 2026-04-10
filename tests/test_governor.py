@@ -547,7 +547,7 @@ class TestSafetyFilterReport:
         g = SpiralTimeGovernor(ablation="always_execute")
         oracle = dict(_DUMMY_ORACLE, n_contacts=4)
         g.step([], _ACTION, oracle, _always_ok)
-        assert g.log[0]["constraint_margins"]["contact_impulse"] >= 0.0
+        assert g.log[0]["constraint_margins"]["contact_impulse"] > 0.0
 
     def test_contact_impulse_margin_negative_with_few_contacts(self):
         """contact_impulse margin is negative when n_contacts < 2."""

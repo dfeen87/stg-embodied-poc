@@ -163,7 +163,9 @@ class SafetyFilterReport:
         * ``"contact_impulse"``  — ``n_contacts − 2.0``  (minimum contact threshold = 2).
     clamped_action_delta : np.ndarray
         Element-wise difference ``gated_action − proposed_action``.
-        Zero vector when no intervention occurred.
+        Zero vector when no intervention occurred.  Note: this field is stored
+        as a plain Python list in the per-step log dict (via ``.tolist()``) to
+        ensure JSON-serialisability and pandas DataFrame compatibility.
     mode : str
         Governor mode at this step (``"EXECUTE"``, ``"VERIFY"``, or ``"SAFE"``).
     phi : float
