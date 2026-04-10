@@ -64,32 +64,26 @@ This script reads the embedded simulation data and writes all eight figures (`fi
 
 ```
 stg-embodied-poc/
-├── README.md
-├── LICENSE                     # Non-Commercial
-├── PAPER.md                    # Companion paper (manuscript)
-├── VALIDATION_ANALYSIS.md      # Detailed validation results and statistical analysis
-├── CITATION.cff                # Citation metadata for the companion paper
-├── requirements.txt
-├── config.py                   # Single source of truth for all parameters
-├── .gitignore
 ├── .github/
 │   └── workflows/
 │       └── ci.yml              # CI pipeline (lint + tests, Python 3.10 & 3.11)
+├── .gitignore
+├── CITATION.cff                # Citation metadata for the companion paper
+├── LICENSE                     # Non-Commercial
+├── PAPER.md                    # Companion paper (manuscript)
+├── README.md
+├── VALIDATION_ANALYSIS.md      # Detailed validation results and statistical analysis
+├── analysis/
+│   ├── __init__.py
+│   └── compute_metrics.py      # Metric computation from episode logs
+├── config.py                   # Single source of truth for all parameters
 ├── envs/
 │   ├── __init__.py
 │   └── quadruped_terrain.py    # dm_control quadruped wrapper + oracle
 ├── governor/
 │   ├── __init__.py
 │   └── spiral_time_governor.py # STG implementation (math from paper)
-├── llm_mock/
-│   ├── __init__.py
-│   ├── mock_llm_agent.py       # Deterministic mock LLM agent
-│   └── real_llm_agent.py       # Real LLM agent (API-backed)
-├── analysis/
-│   ├── __init__.py
-│   └── compute_metrics.py      # Metric computation from episode logs
 ├── images/
-│   ├── generate_plots.py       # Script to regenerate all figures
 │   ├── fig1_violations_by_condition.png
 │   ├── fig2_mode_distribution.png
 │   ├── fig3_hallucination_rate.png
@@ -97,28 +91,35 @@ stg-embodied-poc/
 │   ├── fig5_per_seed_violations_heatmap.png
 │   ├── fig6_success_rate.png
 │   ├── fig7_performance_overhead.png
-│   └── fig8_robustness_summary.png
-├── run_experiment.py           # Main experiment runner (CLI)
-├── run_replay.py               # CLI for the counterfactual replay system
-├── run_sensitivity_sweep.py    # One-at-a-time sensitivity sweep over ΔΦ weights (α, β, γ, δ)
+│   ├── fig8_robustness_summary.png
+│   └── generate_plots.py       # Script to regenerate all figures
+├── llm_mock/
+│   ├── __init__.py
+│   ├── mock_llm_agent.py       # Deterministic mock LLM agent
+│   └── real_llm_agent.py       # Real LLM agent (API-backed)
 ├── replay/
 │   ├── __init__.py
 │   └── counterfactual_replay.py  # Deterministic record-then-replay comparison (raw vs. STG-filtered)
+├── requirements.txt
+├── results/
+│   ├── .gitkeep
+│   ├── ablations.csv           # Per-condition ablation results
+│   ├── metrics.csv             # Aggregated metrics across seeds/conditions
+│   ├── replay/                 # Per-seed counterfactual replay JSON outputs
+│   │   └── .gitkeep
+│   └── sensitivity_delta_phi.csv  # Sensitivity sweep results for ΔΦ weights
+├── run_experiment.py           # Main experiment runner (CLI)
+├── run_replay.py               # CLI for the counterfactual replay system
+├── run_sensitivity_sweep.py    # One-at-a-time sensitivity sweep over ΔΦ weights (α, β, γ, δ)
 ├── scripts/
 │   ├── run_all.sh              # Full pipeline (all conditions, seeds 0–9)
 │   └── run_robustness.sh       # Robustness check (governor, seeds 40–49)
-├── tests/
-│   ├── test_governor.py
-│   ├── test_env.py
-│   ├── test_real_llm_agent.py
-│   ├── test_replay.py
-│   └── test_sensitivity_sweep.py
-└── results/
-    ├── .gitkeep
-    ├── ablations.csv           # Per-condition ablation results
-    ├── metrics.csv             # Aggregated metrics across seeds/conditions
-    ├── sensitivity_delta_phi.csv  # Sensitivity sweep results for ΔΦ weights
-    └── replay/                 # Per-seed counterfactual replay JSON outputs
+└── tests/
+    ├── test_env.py
+    ├── test_governor.py
+    ├── test_real_llm_agent.py
+    ├── test_replay.py
+    └── test_sensitivity_sweep.py
 ```
 
 ---
