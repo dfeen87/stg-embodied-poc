@@ -65,7 +65,7 @@ StepRecord = Dict[str, Any]
 # ---------------------------------------------------------------------------
 
 def _constraint_checker(action: np.ndarray) -> bool:
-    """Return ``True`` iff ``‖action‖₂ < 8.0``."""
+    """Return ``True`` if the action satisfies the constraint (``‖action‖₂ < 8.0``)."""
     return bool(np.linalg.norm(action) < 8.0)
 
 
