@@ -2,7 +2,7 @@
 
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 ![MuJoCo 3.x](https://img.shields.io/badge/MuJoCo-3.x-green)
-![License Non-Commercial](https://img.shields.io/badge/license-Non--Commercial-lightgrey)
+![License MIT](https://img.shields.io/badge/license-MIT-yellow.svg)
 [![CI](https://github.com/dfeen87/stg-embodied-poc/actions/workflows/ci.yml/badge.svg)](https://github.com/dfeen87/stg-embodied-poc/actions/workflows/ci.yml)
 
 
@@ -69,7 +69,7 @@ stg-embodied-poc/
 │       └── ci.yml              # CI pipeline (lint + tests, Python 3.10 & 3.11)
 ├── .gitignore
 ├── CITATION.cff                # Citation metadata for the companion paper
-├── LICENSE                     # Non-Commercial
+├── LICENSE                     # MIT License
 ├── PAPER.md                    # Companion paper (manuscript)
 ├── README.md
 ├── VALIDATION_ANALYSIS.md      # Detailed validation results and statistical analysis
@@ -231,7 +231,12 @@ If you use this code, please cite the companion paper (placeholder — update wh
 ```
 ---
 
-Non-Commercial License - see [`LICENSE`](LICENSE) file.
+MIT License - see [`LICENSE`](LICENSE) file.
+
+---
+
+## Enterprise Consulting & Integration
+This architecture is fully open-source under the MIT License. If your organization requires custom scaling, proprietary integration, or dedicated technical consulting to deploy these models at an enterprise level, please reach out at: dfeen87@gmail.com
 
 ---
 

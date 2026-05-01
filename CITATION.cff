@@ -50,7 +50,7 @@ abstract: >
   model-agnostic and does not modify LLM weights, offering auditability and
   predictable behavior suitable for safety-sensitive legged robot deployments.
 
-license: "TBD — assigned by journal"
+license: "MIT"
 
 repository-code: "https://github.com/dfeen87/stg-embodied-poc"
 
